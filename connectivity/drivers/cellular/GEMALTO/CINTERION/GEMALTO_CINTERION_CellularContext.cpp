@@ -30,6 +30,26 @@ GEMALTO_CINTERION_CellularContext::~GEMALTO_CINTERION_CellularContext()
 {
 }
 
+
+nsapi_error_t GEMALTO_CINTERION_CellularContext::do_user_authentication()
+{
+    // if user has defined user name and password we need to call CGAUTH before activating or modifying context
+    if (_pwd && _uname) {
+        if (!get_device()->get_property(AT_CellularDevice::PROPERTY_AT_CGAUTH)) {
+            return NSAPI_ERROR_UNSUPPORTED;
+        }
+
+        _at.at_cmd_discard("^SGAUTH", "=", "%d%d%s%s", _cid, _authentication_type, _uname, _pwd);
+
+        if (_at.get_last_error() != NSAPI_ERROR_OK) {
+            return NSAPI_ERROR_AUTH_FAILURE;
+        }
+    }
+
+    return NSAPI_ERROR_OK;
+}
+
+
 #if !NSAPI_PPP_AVAILABLE
 NetworkStack *GEMALTO_CINTERION_CellularContext::get_stack()
 {

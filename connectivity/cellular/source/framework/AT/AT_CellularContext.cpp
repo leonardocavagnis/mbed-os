@@ -48,7 +48,7 @@ using namespace rtos;
 using namespace std::chrono_literals;
 
 AT_CellularContext::AT_CellularContext(ATHandler &at, CellularDevice *device, const char *apn, bool cp_req, bool nonip_req) :
-    _current_op(OP_INVALID), _dcd_pin(NC), _active_high(false), _cp_req(cp_req), _is_connected(false), _at(at)
+    _current_op(OP_INVALID), _dcd_pin(NC), _active_high(false), _rat(CATM1), _cp_req(cp_req), _is_connected(false), _at(at)
 {
     tr_info("New CellularContext %s (%p)", apn ? apn : "", this);
     _nonip_req = nonip_req;
@@ -268,6 +268,27 @@ nsapi_error_t AT_CellularContext::connect(const char *sim_pin, const char *apn, 
 {
     set_sim_pin(sim_pin);
     set_credentials(apn, uname, pwd);
+
+#if defined __has_include
+#  if __has_include (<GEMALTO_CINTERION.h>)
+    set_device_ready();
+
+    _at.lock();
+    bool valid_context = get_context();
+    _at.unlock();
+
+    if(!valid_context) {
+        set_new_context(_cid);
+    }
+
+    do_user_authentication();
+
+    enable_access_technology();
+
+    do_connect();
+#  endif
+#endif
+
     return connect();
 }
 
@@ -276,6 +297,11 @@ void AT_CellularContext::set_credentials(const char *apn, const char *uname, con
     _apn = apn;
     _uname = uname;
     _pwd = pwd;
+}
+
+void AT_CellularContext::set_access_technology(RadioAccessTechnologyType rat)
+{
+    _rat = rat;
 }
 
 // PDP Context handling
@@ -352,7 +378,13 @@ bool AT_CellularContext::get_context()
         int pdp_type_len = _at.read_string(pdp_type_from_context, sizeof(pdp_type_from_context));
         if (pdp_type_len > 0) {
             apn_len = _at.read_string(apn, sizeof(apn));
+#if defined __has_include
+#  if __has_include (<GEMALTO_CINTERION.h>)
+            if (apn_len > 0) {
+#  else
             if (apn_len >= 0) {
+#  endif
+#endif
                 if (_apn && (strcmp(apn, _apn) != 0)) {
                     tr_debug("CID %d APN \"%s\"", cid, apn);
                     continue;
@@ -370,6 +402,13 @@ bool AT_CellularContext::get_context()
                     set_cid(cid);
                 }
             }
+#if defined __has_include
+#  if __has_include (<GEMALTO_CINTERION.h>)
+             else {
+                cid_max = 0;
+            }
+#  endif
+#endif
         }
     }
 
@@ -430,6 +469,35 @@ bool AT_CellularContext::set_new_context(int cid)
     }
 
     return success;
+}
+
+void AT_CellularContext::enable_access_technology()
+{
+    switch (_rat)
+    {
+    case CATM1:
+        _at.at_cmd_discard("^SXRAT", "=","%d", _rat);
+        _at.cmd_start_stop("^SCFG", "=","%s%d", "Radio/Band/CatM",80000);
+        _at.resp_start("^SCFG");
+        _at.cmd_start_stop("^SCFG", "=","%s%d%d", "Radio/Band/CatNB",0,0);
+        _at.resp_start("^SCFG");
+        break;
+
+    case CATNB:
+        _at.at_cmd_discard("^SXRAT", "=","%d", _rat);
+        _at.cmd_start_stop("^SCFG", "=","%s%d", "Radio/Band/CatNB",80000);
+        _at.resp_start("^SCFG");
+        _at.cmd_start_stop("^SCFG", "=","%s%d%d", "Radio/Band/CatM",0,0);
+        _at.resp_start("^SCFG");
+        break;
+
+    default:
+        break;
+    }
+
+    _at.cmd_start_stop("^SCFG", "=", "%s%s", "Tcp/withURCs", "on");
+    _at.resp_start("^SCFG");
+
 }
 
 nsapi_error_t AT_CellularContext::do_activate_context()
