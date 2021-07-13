@@ -471,13 +471,7 @@ void CellularStateMachine::state_registering()
         _cb_data.error = NSAPI_ERROR_OK;
         send_event_cb(_current_event);
         // we are already registered, go to attach
-#if defined __has_include
-#  if __has_include (<GEMALTO_CINTERION.h>)
-#  else
-        //This state is not needed for Gemalto TX62-W module
         enter_to_state(STATE_ATTACHING_NETWORK);
-#  endif
-#endif
     } else {
         tr_info("Network registration (timeout %d ms)", _state_timeout_registration.count());
         change_timeout(_state_timeout_registration);

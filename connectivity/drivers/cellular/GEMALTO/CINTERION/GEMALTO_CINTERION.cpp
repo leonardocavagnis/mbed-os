@@ -17,6 +17,7 @@
 
 #include "GEMALTO_CINTERION_CellularContext.h"
 #include "GEMALTO_CINTERION_CellularInformation.h"
+#include "GEMALTO_CINTERION_CellularNetwork.h"
 #include "GEMALTO_CINTERION.h"
 #include "AT_CellularNetwork.h"
 #include "CellularLog.h"
@@ -41,6 +42,11 @@ AT_CellularInformation *GEMALTO_CINTERION::open_information_impl(ATHandler &at)
         return new GEMALTO_CINTERION_CellularInformation(at, *this);
     }
     return AT_CellularDevice::open_information_impl(at);
+}
+
+AT_CellularNetwork *GEMALTO_CINTERION::open_network_impl(ATHandler &at)
+{
+    return new GEMALTO_CINTERION_CellularNetwork(at, *this);
 }
 
 nsapi_error_t GEMALTO_CINTERION::init()
