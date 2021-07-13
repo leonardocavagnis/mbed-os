@@ -30,6 +30,88 @@ GEMALTO_CINTERION_CellularContext::~GEMALTO_CINTERION_CellularContext()
 {
 }
 
+nsapi_error_t GEMALTO_CINTERION_CellularContext::connect(const char *sim_pin, const char *apn, const char *uname,
+                                          const char *pwd)
+{
+    set_sim_pin(sim_pin);
+    set_credentials(apn, uname, pwd);
+
+    set_device_ready();
+
+    _at.lock();
+    bool valid_context = get_context();
+    _at.unlock();
+
+    if(!valid_context) {
+        set_new_context(_cid);
+    }
+
+    do_user_authentication();
+
+    enable_access_technology();
+
+    return AT_CellularContext::connect();
+}
+
+bool GEMALTO_CINTERION_CellularContext::get_context()
+{
+    _at.cmd_start_stop("+CGDCONT", "?");
+    _at.resp_start("+CGDCONT:");
+    set_cid(-1);
+    int cid_max = 0; // needed when creating new context
+    char apn[MAX_ACCESSPOINT_NAME_LENGTH];
+    int apn_len = 0;
+
+    while (_at.info_resp()) {
+        int cid = _at.read_int();
+        if (cid > cid_max) {
+            cid_max = cid;
+        }
+        char pdp_type_from_context[10];
+        int pdp_type_len = _at.read_string(pdp_type_from_context, sizeof(pdp_type_from_context));
+        if (pdp_type_len > 0) {
+            apn_len = _at.read_string(apn, sizeof(apn));
+            if (apn_len > 0) {
+                if (_apn && (strcmp(apn, _apn) != 0)) {
+                    tr_debug("CID %d APN \"%s\"", cid, apn);
+                    continue;
+                }
+
+                // APN matched -> Check PDP type
+                pdp_type_t pdp_type = string_to_pdp_type(pdp_type_from_context);
+                tr_debug("CID %d APN \"%s\" pdp_type %u", cid, apn, pdp_type);
+
+                // Accept exact matching PDP context type or dual PDP context for modems that support both IPv4 and IPv6 stacks
+                if (get_device()->get_property(pdp_type_t_to_cellular_property(pdp_type)) ||
+                        ((pdp_type == IPV4V6_PDP_TYPE && (get_device()->get_property(AT_CellularDevice::PROPERTY_IPV4_PDP_TYPE) &&
+                                                          get_device()->get_property(AT_CellularDevice::PROPERTY_IPV6_PDP_TYPE))) && !_nonip_req)) {
+                    _pdp_type = pdp_type;
+                    set_cid(cid);
+                }
+            }
+             else {
+                cid_max = 0;
+            }
+        }
+    }
+
+    _at.resp_stop();
+    if (_cid == -1) { // no suitable context was found so create a new one
+        if (!set_new_context(cid_max + 1)) {
+            return false;
+        }
+    }
+
+    // save the apn
+    if (apn_len > 0 && !_apn) {
+        memcpy(_found_apn, apn, apn_len + 1);
+    }
+
+    tr_info("Found PDP context %d", _cid);
+
+    return true;
+}
+
 
 nsapi_error_t GEMALTO_CINTERION_CellularContext::do_user_authentication()
 {

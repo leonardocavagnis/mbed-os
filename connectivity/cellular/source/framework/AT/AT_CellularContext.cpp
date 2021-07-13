@@ -269,26 +269,6 @@ nsapi_error_t AT_CellularContext::connect(const char *sim_pin, const char *apn, 
     set_sim_pin(sim_pin);
     set_credentials(apn, uname, pwd);
 
-#if defined __has_include
-#  if __has_include (<GEMALTO_CINTERION.h>)
-    set_device_ready();
-
-    _at.lock();
-    bool valid_context = get_context();
-    _at.unlock();
-
-    if(!valid_context) {
-        set_new_context(_cid);
-    }
-
-    do_user_authentication();
-
-    enable_access_technology();
-
-    do_connect();
-#  endif
-#endif
-
     return connect();
 }
 
@@ -378,13 +358,7 @@ bool AT_CellularContext::get_context()
         int pdp_type_len = _at.read_string(pdp_type_from_context, sizeof(pdp_type_from_context));
         if (pdp_type_len > 0) {
             apn_len = _at.read_string(apn, sizeof(apn));
-#if defined __has_include
-#  if __has_include (<GEMALTO_CINTERION.h>)
-            if (apn_len > 0) {
-#  else
             if (apn_len >= 0) {
-#  endif
-#endif
                 if (_apn && (strcmp(apn, _apn) != 0)) {
                     tr_debug("CID %d APN \"%s\"", cid, apn);
                     continue;
@@ -402,13 +376,6 @@ bool AT_CellularContext::get_context()
                     set_cid(cid);
                 }
             }
-#if defined __has_include
-#  if __has_include (<GEMALTO_CINTERION.h>)
-             else {
-                cid_max = 0;
-            }
-#  endif
-#endif
         }
     }
 
