@@ -109,6 +109,7 @@ protected:
      */
     virtual const char *get_nonip_context_type_str();
     virtual void enable_access_technology();
+    virtual void set_cid(int cid);
 
 private:
 #if NSAPI_PPP_AVAILABLE
@@ -125,7 +126,6 @@ private:
     nsapi_error_t check_operation(nsapi_error_t err, ContextOperation op);
     void ciot_opt_cb(mbed::CellularNetwork::CIoT_Supported_Opt ciot_opt);
     virtual void do_connect_with_retry();
-    void set_cid(int cid);
 
 private:
     ContextOperation _current_op;
