@@ -116,7 +116,7 @@ bool GEMALTO_CINTERION_CellularContext::get_context()
 nsapi_error_t GEMALTO_CINTERION_CellularContext::do_user_authentication()
 {
     // if user has defined user name and password we need to call CGAUTH before activating or modifying context
-    if (_pwd && _uname) {
+    if ((strcmp(_pwd, "") != 0) && (strcmp(_uname, "") != 0)) {
         if (!get_device()->get_property(AT_CellularDevice::PROPERTY_AT_CGAUTH)) {
             return NSAPI_ERROR_UNSUPPORTED;
         }
@@ -126,6 +126,8 @@ nsapi_error_t GEMALTO_CINTERION_CellularContext::do_user_authentication()
         if (_at.get_last_error() != NSAPI_ERROR_OK) {
             return NSAPI_ERROR_AUTH_FAILURE;
         }
+    } else {
+        tr_info("Empty pwd and username fields: no need for authentication\n");
     }
 
     return NSAPI_ERROR_OK;
