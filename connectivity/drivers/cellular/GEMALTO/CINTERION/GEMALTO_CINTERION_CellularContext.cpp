@@ -71,12 +71,7 @@ bool GEMALTO_CINTERION_CellularContext::get_context()
         int pdp_type_len = _at.read_string(pdp_type_from_context, sizeof(pdp_type_from_context));
         if (pdp_type_len > 0) {
             apn_len = _at.read_string(apn, sizeof(apn));
-            if (apn_len > 0) {
-                if (_apn && (strcmp(apn, _apn) != 0)) {
-                    tr_debug("CID %d APN \"%s\"", cid, apn);
-                    continue;
-                }
-
+            if (apn_len > 0 && (strcmp(apn, _apn) == 0)) {
                 // APN matched -> Check PDP type
                 pdp_type_t pdp_type = string_to_pdp_type(pdp_type_from_context);
                 tr_debug("CID %d APN \"%s\" pdp_type %u", cid, apn, pdp_type);
