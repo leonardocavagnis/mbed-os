@@ -241,7 +241,7 @@ void GEMALTO_CINTERION::init_module_ehs5e()
 
 #if MBED_CONF_GEMALTO_CINTERION_PROVIDE_DEFAULT
 #include "drivers/BufferedSerial.h"
-CellularDevice *CellularDevice::get_default_instance()
+CellularDevice *GEMALTO_CINTERION::get_default_instance()
 {
     static BufferedSerial serial(MBED_CONF_GEMALTO_CINTERION_TX, MBED_CONF_GEMALTO_CINTERION_RX, MBED_CONF_GEMALTO_CINTERION_BAUDRATE);
 #if defined(MBED_CONF_GEMALTO_CINTERION_RTS) && defined(MBED_CONF_GEMALTO_CINTERION_CTS)

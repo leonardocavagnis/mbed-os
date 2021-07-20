@@ -144,6 +144,11 @@ void AT_CellularDevice::urc_pdn_deact()
     send_disconnect_to_context(cid);
 }
 
+nsapi_error_t AT_CellularDevice::set_authomatic_time_zone_update()
+{
+    return _at.at_cmd_discard("+CTZU", "=", "%d", 1);
+}
+
 void AT_CellularDevice::send_disconnect_to_context(int cid)
 {
     tr_debug("send_disconnect_to_context, cid: %d", cid);
@@ -396,6 +401,152 @@ void AT_CellularDevice::set_timeout(int timeout)
     if (_state_machine) {
         _state_machine->set_timeout(_default_timeout);
     }
+}
+
+unsigned long AT_CellularDevice::get_time()
+{
+    tr_info("AT_CellularDevice::get_time\n");
+
+    struct tm now;
+
+    //Enable authomatic time zone update:
+    set_authomatic_time_zone_update();
+
+    _at.lock();
+
+    //"+CCLK: \"%y/%m/%d,%H:%M:%S+ZZ"
+    _at.cmd_start_stop("+CCLK", "?");
+    _at.resp_start("+CCLK:");
+
+    char time_str[50];
+    int time_len = 0;
+    while (_at.info_resp()) {
+        int date_len = _at.read_string(time_str, sizeof(time_str));
+        tr_debug("Read %d bytes for the date\n", date_len);
+        if (date_len > 0) {
+            char *ptr = time_str;
+
+            now.tm_year = std::strtol(ptr, NULL, 10) + 100; // mktime starts from 1900
+            ptr = ptr + 3; // Skip '/'
+            now.tm_mon = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3; // Skip '/'
+            now.tm_mday = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3; // Skip ','
+            now.tm_hour = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3; // Skip ':'
+            now.tm_min = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3;
+            now.tm_sec = std::strtol(ptr, NULL, 10);
+        }
+    }
+    _at.resp_stop();
+
+    _at.unlock();
+
+    tr_debug("Year: %d, month: %d, day:%d, hour:%d, minute:%d, second:%d\n", now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec);
+
+    // adjust for timezone offset which is +/- in 15 minute increments
+    long long result = mktime(&now);
+    time_t delta = ((time_str[18] - '0') * 10 + (time_str[19] - '0')) * (15 * 60);
+
+    if (time_str[17] == '-') {
+        result = result + delta;
+    } else if (time_str[17] == '+') {
+        result = result - delta;
+    }
+
+    return result;
+}
+
+unsigned long AT_CellularDevice::get_local_time()
+{
+    tr_info("AT_CellularDevice::get_local_time\n");
+
+    struct tm now;
+
+    _at.lock();
+
+    //"+CCLK: \"%y/%m/%d,%H:%M:%S"
+    _at.cmd_start_stop("+CCLK", "?");
+    _at.resp_start("+CCLK:");
+
+    char time_str[50];
+    int time_len = 0;
+    while (_at.info_resp()) {
+        int date_len = _at.read_string(time_str, sizeof(time_str));
+        tr_debug("Read %d bytes for the date\n", date_len);
+        if (date_len > 0) {
+            char *ptr = time_str;
+
+            now.tm_year = std::strtol(ptr, NULL, 10) + 100; // mktime starts from 1900
+            ptr = ptr + 3; // Skip '/'
+            now.tm_mon = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3; // Skip '/'
+            now.tm_mday = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3; // Skip ','
+            now.tm_hour = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3; // Skip ':'
+            now.tm_min = std::strtol(ptr, NULL, 10);
+            ptr = ptr + 3;
+            now.tm_sec = std::strtol(ptr, NULL, 10);
+        }
+    }
+    _at.resp_stop();
+
+    _at.unlock();
+
+    tr_debug("Year: %d, month: %d, day:%d, hour:%d, minute:%d, second:%d\n", now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec);
+
+    long long result = mktime(&now);
+
+    return result;
+
+}
+
+bool AT_CellularDevice::set_time(unsigned long const epoch, int const timezone)
+    {
+    char time_buf[20];
+    const uint8_t daysInMonth [] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30 };
+    unsigned long unix_time = epoch - 946684800UL; /* Subtract seconds from 1970 to 2000 */
+
+    /* Convert unix_time from seconds to days */
+    int days = unix_time / (24 * 3600);
+    int leap;
+    int year = 0;
+    while (1) {
+        leap = year % 4 == 0;
+        if (days < 365 + leap) {
+        break;
+        }
+        days -= 365 + leap;
+        year++;
+    }
+
+    int month;
+    for (month = 1; month < 12; month++) {
+        uint8_t daysPerMonth = daysInMonth[month - 1];
+        if (leap && month == 2)
+        daysPerMonth++;
+        if (days < daysPerMonth) {
+        break;
+        }
+        days -= daysPerMonth;
+    }
+
+    int hours = (unix_time  % 86400L) / 3600;
+    int minutes = (unix_time  % 3600) / 60;
+    int seconds = unix_time % 60;
+
+    tr_debug("Year: %d, month: %d, day:%d, hour:%d, minute:%d, second:%d\n", year, month, days, hours, minutes, seconds);
+
+    sprintf(time_buf, "%02d/%02d/%02d,%02d:%02d:%02d+%02d", year, month, days, hours, minutes, seconds, timezone);
+
+    _at.lock();
+    _at.at_cmd_discard("+CCLK", "=", "%s", time_buf);
+    _at.unlock();
+
+    return true;
+
 }
 
 void AT_CellularDevice::modem_debug_on(bool on)
