@@ -45,6 +45,15 @@ MEMORY
   ITCMRAM (xrw)  : ORIGIN = 0x00000000, LENGTH = 64K
 }
 
+
+#if defined(MCUBOOT_BOOTLOADER_BUILD) && defined(TARGET_PORTENTA_H7_M7)
+_ConfigStart = 0x0802F000;
+_IdentificationStart = 0x080002F0;
+_EncryptKeyStart = 0x08000300;
+_SigningKeyStart = 0x08000400;
+#endif
+
+
 /* Linker script to place sections and symbol values. Should be used together
  * with other linker script that defines memory regions FLASH and RAM.
  * It references following symbols, which must be defined in code:
@@ -79,6 +88,12 @@ SECTIONS
     .text :
     {
         KEEP(*(.isr_vector))
+#if defined(MCUBOOT_BOOTLOADER_BUILD) && defined(TARGET_PORTENTA_H7_M7)
+        . = ABSOLUTE(0x080002F0);
+        KEEP(*(.bootloader_identification))
+        KEEP(*(.signing_key))
+        KEEP(*(.encrypt_key))
+#endif
         *(.text*)
 
         KEEP(*(.init))
@@ -97,6 +112,18 @@ SECTIONS
         *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
         *(SORT(.dtors.*))
         *(.dtors)
+
+#if defined(MCUBOOT_BOOTLOADER_BUILD) && defined(TARGET_PORTENTA_H7_M7)
+        *lib*.o(.rodata*)
+        *ltrans0*.o(.rodata*)
+        *ltrans1*.o(.rodata*)
+        *ltrans2*.o(.rodata*)
+        *ltrans3*.o(.rodata*)
+        *ltrans4*.o(.rodata*)
+
+        . = ABSOLUTE(0x0801F000);
+        KEEP(*(.bootloader_version))
+#endif
 
         *(.rodata*)
 
