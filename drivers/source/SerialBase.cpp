@@ -71,6 +71,9 @@ int SerialBase::readable()
 {
     lock();
     int ret = serial_readable(&_serial);
+    if (sw_flow_control == true && _rts_pin != nullptr) {
+        *_rts_pin = !!!ret;
+    }
     unlock();
     return ret;
 }
@@ -80,6 +83,9 @@ int SerialBase::writeable()
 {
     lock();
     int ret = serial_writable(&_serial);
+    if (sw_flow_control) {
+        ret = ret & !(*_cts_pin);
+    }
     unlock();
     return ret;
 }
@@ -317,6 +323,14 @@ void SerialBase::set_flow_control(Flow type, PinName flow1, PinName flow2)
         case RTSCTS:
         case Disabled:
             serial_set_flow_control(&_serial, flow_type, flow1, flow2);
+            break;
+
+        case RTSCTS_SW:
+            sw_flow_control = true;
+            if (_flow1 != NC)
+                _cts_pin = new DigitalIn(_flow1);
+            if (_flow2 != NC)
+                _rts_pin = new DigitalOut(_flow2, 0);
             break;
 
         default:
