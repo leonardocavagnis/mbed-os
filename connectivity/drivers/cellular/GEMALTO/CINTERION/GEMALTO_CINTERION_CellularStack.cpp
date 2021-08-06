@@ -483,6 +483,7 @@ sisr_retry:
     }
     if (len == -1) {
         if (GEMALTO_CINTERION::get_module() == GEMALTO_CINTERION::ModuleTX62 && _at.get_last_read_error() == -2) {
+            _at.process_oob();
             tr_error("Socket %d recvfrom finished!", socket->id);
             socket->pending_bytes = 0;
             return NSAPI_ERROR_OK;
