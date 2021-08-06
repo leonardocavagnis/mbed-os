@@ -101,6 +101,18 @@ void GEMALTO_CINTERION_CellularStack::urc_sisr()
     sisr_urc_handler(sock_id, urc_code);
 }
 
+void GEMALTO_CINTERION_CellularStack::urc_sysstart()
+{
+    // close sockets if open
+    _at.lock();
+    for (int i = 0; i < _device.get_property(AT_CellularDevice::PROPERTY_SOCKET_COUNT); i++) {
+        _at.clear_error();
+        socket_close_impl(i);
+    }
+    _at.clear_error();
+    _at.unlock();
+}
+
 void GEMALTO_CINTERION_CellularStack::sisr_urc_handler(int sock_id, int urc_code)
 {
     CellularSocket *sock = find_socket(sock_id);
@@ -122,7 +134,7 @@ nsapi_error_t GEMALTO_CINTERION_CellularStack::socket_stack_init()
         _at.set_urc_handler("^SIS:", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sis));
         _at.set_urc_handler("^SISW:", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sisw));
         _at.set_urc_handler("^SISR:", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sisr));
-        _at.set_urc_handler("^SYSSTART", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sisr));
+        _at.set_urc_handler("^SYSSTART", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sysstart));
     } else { // recovery cleanup
         // close all Internet and connection profiles
         for (int i = 0; i < _device.get_property(AT_CellularDevice::PROPERTY_SOCKET_COUNT); i++) {

@@ -56,6 +56,7 @@ private:
     // socket URC handlers as per Cinterion AT manuals
     void urc_sis();
     void urc_sisw();
+    void urc_sysstart();
     void sisw_urc_handler(int sock_id, int urc_code);
     void urc_sisr();
     void sisr_urc_handler(int sock_id, int urc_code);
