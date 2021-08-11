@@ -34,6 +34,10 @@ public:
      */
     nsapi_error_t socket_stack_init();
 
+    void lock();
+    void unlock();
+    void startGNSS(mbed::Callback<void(char*)> gnss_cb);
+
 protected:
 
     virtual nsapi_error_t socket_close_impl(int sock_id);
@@ -61,6 +65,8 @@ private:
     void urc_sisr();
     void sisr_urc_handler(int sock_id, int urc_code);
 
+    void urc_gnss();
+
     // sockets need a connection profile, one profile is enough to support single stack sockets
     nsapi_error_t create_connection_profile(int connection_profile_id);
     void close_connection_profile(int connection_profile_id);
@@ -72,6 +78,8 @@ private:
     const char *_apn;
     const char *_user;
     const char *_password;
+
+    mbed::Callback<void(char*)> _gnss_cb;
 
 #ifdef MBED_CONF_CELLULAR_OFFLOAD_DNS_QUERIES
     hostbyname_cb_t _dns_callback;

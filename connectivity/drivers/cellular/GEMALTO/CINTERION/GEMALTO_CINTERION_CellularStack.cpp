@@ -126,6 +126,40 @@ void GEMALTO_CINTERION_CellularStack::sisr_urc_handler(int sock_id, int urc_code
     }
 }
 
+
+void GEMALTO_CINTERION_CellularStack::lock() {
+    _at.lock();
+}
+
+void GEMALTO_CINTERION_CellularStack::unlock() {
+    _at.unlock();
+}
+
+void GEMALTO_CINTERION_CellularStack::urc_gnss() {
+    printf("urc_gnss called\n");
+    printf("%x\n", _gnss_cb);
+
+    char gnss_string[50] = {'$', 'G'};
+    if (_gnss_cb) {
+        _at.set_delimiter('\n');
+        _at.read_string(&gnss_string[2], 48);
+        _at.set_default_delimiter();
+        _gnss_cb(gnss_string);
+    }
+}
+
+void GEMALTO_CINTERION_CellularStack::startGNSS(mbed::Callback<void(char*)> gnss_cb) {
+    _at.lock();
+    _gnss_cb = gnss_cb;
+    _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine/StartMode", 0);
+    _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 3);
+    //_at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Output", "off");
+    _at.at_cmd_discard("^SGPSE", "=", "%s%s", "Nmea/Urc", "on");
+    _at.clear_error();
+    _at.unlock();
+}
+
+
 nsapi_error_t GEMALTO_CINTERION_CellularStack::socket_stack_init()
 {
     _at.lock();
@@ -135,6 +169,8 @@ nsapi_error_t GEMALTO_CINTERION_CellularStack::socket_stack_init()
         _at.set_urc_handler("^SISW:", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sisw));
         _at.set_urc_handler("^SISR:", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sisr));
         _at.set_urc_handler("^SYSSTART", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_sysstart));
+        _at.set_urc_handler("^SGPSE", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_gnss));
+        _at.set_urc_handler("$G", mbed::Callback<void()>(this, &GEMALTO_CINTERION_CellularStack::urc_gnss));
     } else { // recovery cleanup
         // close all Internet and connection profiles
         for (int i = 0; i < _device.get_property(AT_CellularDevice::PROPERTY_SOCKET_COUNT); i++) {
