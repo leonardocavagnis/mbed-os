@@ -340,7 +340,7 @@ int FATFileSystem::unmount()
     unlock();
     return fat_error_remap(res);
 }
-
+#if MBED_CONF_FAT_CHAN_FF_USE_MKFS
 /* See http://elm-chan.org/fsw/ff/en/mkfs.html for details of f_mkfs() and
  * associated arguments. */
 int FATFileSystem::format(BlockDevice *bd, bd_size_t cluster_size)
@@ -464,6 +464,7 @@ int FATFileSystem::reformat(BlockDevice *bd, int allocation_unit)
     unlock();
     return err;
 }
+#endif
 
 int FATFileSystem::remove(const char *path)
 {

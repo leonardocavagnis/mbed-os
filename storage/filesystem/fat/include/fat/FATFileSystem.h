@@ -45,6 +45,7 @@ public:
     FATFileSystem(const char *name = NULL, BlockDevice *bd = NULL);
     virtual ~FATFileSystem();
 
+#if MBED_CONF_FAT_CHAN_FF_USE_MKFS
     /** Format a logical drive, FDISK partitioning rule.
      *
      *  The block device to format should be mounted when this function is called.
@@ -62,6 +63,7 @@ public:
      *  @return         0 on success, negative error code on failure.
      */
     static int format(BlockDevice *bd, bd_size_t cluster_size = 0);
+#endif
 
     /** Mount a file system to a block device.
      *
@@ -76,6 +78,7 @@ public:
      */
     virtual int unmount();
 
+#if MBED_CONF_FAT_CHAN_FF_USE_MKFS
     /** Reformat a file system, results in an empty and mounted file system.
      *
      *  @param bd
@@ -108,6 +111,7 @@ public:
         // Required for virtual inheritance shenanigans.
         return reformat(bd, 0);
     }
+#endif
 
     /** Remove a file from the file system.
      *
