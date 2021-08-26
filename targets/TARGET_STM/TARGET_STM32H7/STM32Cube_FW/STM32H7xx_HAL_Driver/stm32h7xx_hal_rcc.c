@@ -469,6 +469,7 @@ __weak HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
       }
     }
   }
+#if !defined(TARGET_PORTENTA_H7_M7) || !defined(MCUBOOT_BOOTLOADER_BUILD)
   /*----------------------------- HSI Configuration --------------------------*/
   if(((RCC_OscInitStruct->OscillatorType) & RCC_OSCILLATORTYPE_HSI) == RCC_OSCILLATORTYPE_HSI)
   {
@@ -687,6 +688,7 @@ __weak HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
       }
     }
   }
+#endif
   /*------------------------------ LSE Configuration -------------------------*/
   if(((RCC_OscInitStruct->OscillatorType) & RCC_OSCILLATORTYPE_LSE) == RCC_OSCILLATORTYPE_LSE)
   {
