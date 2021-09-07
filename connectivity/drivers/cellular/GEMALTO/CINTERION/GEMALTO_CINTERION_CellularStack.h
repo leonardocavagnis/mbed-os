@@ -36,7 +36,10 @@ public:
 
     void lock();
     void unlock();
-    void startGNSS(mbed::Callback<void(char*)> gnss_cb);
+    void beginGNSS(mbed::Callback<void(char*)> gnss_cb);
+    void endGNSS();
+    void startGNSS();
+    void stopGNSS();
 
 protected:
 
@@ -78,6 +81,7 @@ private:
     const char *_apn;
     const char *_user;
     const char *_password;
+    bool _engine;
 
     mbed::Callback<void(char*)> _gnss_cb;
 

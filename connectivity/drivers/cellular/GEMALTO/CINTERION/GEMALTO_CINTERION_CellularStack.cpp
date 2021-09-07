@@ -148,17 +148,54 @@ void GEMALTO_CINTERION_CellularStack::urc_gnss() {
     }
 }
 
-void GEMALTO_CINTERION_CellularStack::startGNSS(mbed::Callback<void(char*)> gnss_cb) {
+void GEMALTO_CINTERION_CellularStack::beginGNSS(mbed::Callback<void(char*)> gnss_cb) {
     _at.lock();
     _gnss_cb = gnss_cb;
     _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine/StartMode", 0);
-    _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 3);
-    //_at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Output", "off");
-    _at.at_cmd_discard("^SGPSE", "=", "%s%s", "Nmea/Urc", "on");
+    _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 0);
+    _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "off");
     _at.clear_error();
     _at.unlock();
 }
 
+void GEMALTO_CINTERION_CellularStack::endGNSS() {
+    _at.lock();
+    _gnss_cb = nullptr;
+    _at.clear_error();
+    _at.unlock();
+}
+
+void GEMALTO_CINTERION_CellularStack::startGNSS() {
+    _at.lock();
+    _engine = false;
+    _at.cmd_start_stop("^SGPSC", "=", "%s%d", "Engine", 3);
+    _at.resp_start("^SGPSC: \"Engine\",");
+
+    char respEng[2];
+    int resp_len = _at.read_string(respEng, sizeof(respEng));
+    if (strcmp(respEng, "3") != 0) {
+        _engine = false;
+        _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 0);
+        _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "off");
+        return;
+    }
+    _engine = true;
+    _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "on");
+    _at.clear_error();
+    _at.unlock();
+}
+
+void GEMALTO_CINTERION_CellularStack::stopGNSS() {
+    if(_engine) {
+        _at.lock();
+        _gnss_cb = nullptr;
+        _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "off");
+        _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 0);
+        _at.clear_error();
+        _at.unlock();
+        _engine = false;
+    }
+}
 
 nsapi_error_t GEMALTO_CINTERION_CellularStack::socket_stack_init()
 {
