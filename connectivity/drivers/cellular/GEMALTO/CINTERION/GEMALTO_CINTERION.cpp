@@ -103,7 +103,7 @@ void GEMALTO_CINTERION::init_module_tx62()
         AT_CellularNetwork::RegistrationModeDisable,    // C_REG
         0,  // AT_CGSN_WITH_TYPE
         0,  // AT_CGDATA
-        0,  // AT_CGAUTH
+        1,  // AT_CGAUTH
         1,  // AT_CNMI
         1,  // AT_CSMP
         1,  // AT_CMGF

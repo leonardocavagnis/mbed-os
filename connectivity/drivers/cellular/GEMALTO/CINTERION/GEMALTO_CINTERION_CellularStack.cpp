@@ -136,13 +136,10 @@ void GEMALTO_CINTERION_CellularStack::unlock() {
 }
 
 void GEMALTO_CINTERION_CellularStack::urc_gnss() {
-    printf("urc_gnss called\n");
-    printf("%x\n", _gnss_cb);
-
-    char gnss_string[50] = {'$', 'G'};
+    char gnss_string[100] = {'$', 'G'};
     if (_gnss_cb) {
         _at.set_delimiter('\n');
-        _at.read_string(&gnss_string[2], 48);
+        _at.read_string(&gnss_string[2], 98);
         _at.set_default_delimiter();
         _gnss_cb(gnss_string);
     }
@@ -165,7 +162,7 @@ void GEMALTO_CINTERION_CellularStack::endGNSS() {
     _at.unlock();
 }
 
-void GEMALTO_CINTERION_CellularStack::startGNSS() {
+int GEMALTO_CINTERION_CellularStack::startGNSS() {
     _at.lock();
     _engine = false;
     _at.cmd_start_stop("^SGPSC", "=", "%s%d", "Engine", 3);
@@ -177,23 +174,41 @@ void GEMALTO_CINTERION_CellularStack::startGNSS() {
         _engine = false;
         _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 0);
         _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "off");
-        return;
+        return 0;
     }
     _engine = true;
     _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "on");
     _at.clear_error();
     _at.unlock();
+    return 1;
 }
 
 void GEMALTO_CINTERION_CellularStack::stopGNSS() {
     if(_engine) {
         _at.lock();
-        _gnss_cb = nullptr;
         _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "off");
         _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 0);
         _at.clear_error();
         _at.unlock();
         _engine = false;
+    }
+}
+
+void GEMALTO_CINTERION_CellularStack::PSMEnable() {
+    if(_engine) {
+        _at.lock();
+        _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Power/Psm", 1);
+        _at.clear_error();
+        _at.unlock();
+    }
+}
+
+void GEMALTO_CINTERION_CellularStack::PSMDisable() {
+    if(_engine) {
+        _at.lock();
+        _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Power/Psm", 0);
+        _at.clear_error();
+        _at.unlock();
     }
 }
 
@@ -230,8 +245,6 @@ nsapi_error_t GEMALTO_CINTERION_CellularStack::socket_close_impl(int sock_id)
     _at.at_cmd_discard("^SISC", "=", "%d", sock_id);
 
     _at.clear_error(); // clear SISS even though SISC fails
-
-    _at.at_cmd_discard("^SISS", "=", "%d%s%s", sock_id, "srvType", "none");
 
     _at.restore_at_timeout();
 

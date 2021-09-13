@@ -38,8 +38,10 @@ public:
     void unlock();
     void beginGNSS(mbed::Callback<void(char*)> gnss_cb);
     void endGNSS();
-    void startGNSS();
+    int startGNSS();
     void stopGNSS();
+    void PSMEnable();
+    void PSMDisable();
 
 protected:
 
