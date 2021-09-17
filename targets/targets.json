@@ -3609,7 +3609,8 @@
             "system_power_supply": "PWR_LDO_SUPPLY",
             "clock_source": "USE_PLL_HSE_EXTC",
             "lse_available": 0,
-            "lpticker_delay_ticks": 0
+            "lpticker_delay_ticks": 0,
+            "network-default-interface-type": "WIFI"
         },
         "components_add": [
             "QSPIF",
