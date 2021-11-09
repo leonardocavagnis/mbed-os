@@ -4,16 +4,18 @@
 
 #if DEVICE_WATCHDOG
 
-static watchdog_config_t watchdogConfig;
+static watchdog_config_t watchdogConfig = {
+    0    // timeout_ms
+};
 
 watchdog_status_t hal_watchdog_init(const watchdog_config_t *config)
 {
-    watchdogConfig = *config;
     // The pico watchdogs accept a maximum value of 0x7fffff
     if ( config->timeout_ms < 0x1 && config->timeout_ms > 0x7FFFFF ) {
         return WATCHDOG_STATUS_INVALID_ARGUMENT;
     }
 
+    watchdogConfig = *config;
     watchdog_enable(config->timeout_ms, true);
 
     return WATCHDOG_STATUS_OK;
@@ -32,9 +34,12 @@ watchdog_status_t hal_watchdog_stop(void)
 
 uint32_t hal_watchdog_get_reload_value(void)
 {
-    uint32_t load_value = watchdogConfig.timeout_ms * 1000 * 2;
-    if (load_value > 0xffffffu) {
-        load_value = 0xffffffu;
+    uint32_t load_value = 0;
+    if ( watchdogConfig.timeout_ms > 0 ) {
+        load_value = watchdogConfig.timeout_ms * 1000 * 2;
+        if (load_value > 0xffffffu) {
+            load_value = 0xffffffu;
+        }
     }
     return load_value;
 }
