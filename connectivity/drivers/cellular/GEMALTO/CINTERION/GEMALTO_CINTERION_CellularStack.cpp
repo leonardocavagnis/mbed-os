@@ -151,12 +151,15 @@ void GEMALTO_CINTERION_CellularStack::beginGNSS(mbed::Callback<void(char*)> gnss
     _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine/StartMode", 0);
     _at.at_cmd_discard("^SGPSC", "=", "%s%d", "Engine", 0);
     _at.at_cmd_discard("^SGPSC", "=", "%s%s", "Nmea/Urc", "off");
+    _at.at_cmd_discard("^SPIO", "=", "%d", 1);
+    _at.at_cmd_discard("^SCPIN", "=", "%d%d%d%d", 1, 7, 1, 0);
     _at.clear_error();
     _at.unlock();
 }
 
 void GEMALTO_CINTERION_CellularStack::endGNSS() {
     _at.lock();
+    _at.at_cmd_discard("^SSIO", "=", "%d%d", 7, 0);
     _gnss_cb = nullptr;
     _at.clear_error();
     _at.unlock();
@@ -165,6 +168,7 @@ void GEMALTO_CINTERION_CellularStack::endGNSS() {
 int GEMALTO_CINTERION_CellularStack::startGNSS() {
     _at.lock();
     _engine = false;
+    _at.at_cmd_discard("^SSIO", "=", "%d%d", 7, 1);
     _at.cmd_start_stop("^SGPSC", "=", "%s%d", "Engine", 3);
     _at.resp_start("^SGPSC: \"Engine\",");
 
