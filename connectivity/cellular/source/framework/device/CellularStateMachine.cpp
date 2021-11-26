@@ -361,6 +361,12 @@ void CellularStateMachine::state_device_ready()
         _cb_data.error = _cellularDevice.soft_power_on();
     }
     if (_cb_data.error == NSAPI_ERROR_OK) {
+        if(_cellularDevice.is_cmux_enabled()){
+            _cb_data.error = _cellularDevice.enable_cmux();
+             if (_cb_data.error == NSAPI_ERROR_OK) {
+                _cellularDevice.enableCMUXChannel();
+             }
+        }
         _cb_data.error = _cellularDevice.init();
         if (_cb_data.error == NSAPI_ERROR_OK) {
 

@@ -73,6 +73,8 @@ public:
      */
     static CellularDevice *get_default_instance();
 
+    mbed::Callback<void(void)> enableCMUXChannel = nullptr;
+
     /** Return target onboard instance of CellularDevice
      *
      *  @remark Mbed OS target shall override (non-weak) this function for an onboard modem.
@@ -215,6 +217,13 @@ public: //Pure virtual functions
      *                  NSAPI_ERROR_DEVICE_ERROR on failure
      */
     virtual nsapi_error_t get_sim_state(SimState &state) = 0;
+
+    virtual nsapi_error_t enable_cmux() = 0;
+
+
+    virtual bool is_cmux_enabled() = 0;
+
+    virtual void set_cmux_status_flag(bool cmux_status) = 0;
 
     /** Creates a new CellularContext interface.
      *

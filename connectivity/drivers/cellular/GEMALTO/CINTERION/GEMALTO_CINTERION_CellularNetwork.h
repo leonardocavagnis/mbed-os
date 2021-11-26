@@ -26,6 +26,8 @@ public:
     GEMALTO_CINTERION_CellularNetwork(ATHandler &at, AT_CellularDevice &device);
     virtual ~GEMALTO_CINTERION_CellularNetwork();
     virtual nsapi_error_t set_attach();
+    virtual void get_context_state_command();
+
 
 protected:
 };

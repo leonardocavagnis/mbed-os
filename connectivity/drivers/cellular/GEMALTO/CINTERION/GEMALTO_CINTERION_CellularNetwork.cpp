@@ -31,4 +31,9 @@ nsapi_error_t GEMALTO_CINTERION_CellularNetwork::set_attach()
     return NSAPI_ERROR_OK;
 }
 
+void GEMALTO_CINTERION_CellularNetwork::get_context_state_command()
+{
+    _at.cmd_start_stop("^SICA", "?");
+    _at.resp_start("^SICA:");
+}
  /* namespace mbed */

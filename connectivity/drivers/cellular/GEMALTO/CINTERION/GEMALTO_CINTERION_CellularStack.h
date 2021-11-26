@@ -37,6 +37,7 @@ public:
     void lock();
     void unlock();
     void beginGNSS(mbed::Callback<void(char*)> gnss_cb);
+    void enableCmux();
     void endGNSS();
     int startGNSS();
     void stopGNSS();

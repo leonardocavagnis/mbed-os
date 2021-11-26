@@ -165,6 +165,11 @@ void GEMALTO_CINTERION_CellularStack::endGNSS() {
     _at.unlock();
 }
 
+void GEMALTO_CINTERION_CellularStack::enableCmux()
+{
+    _at.at_cmd_discard("+CMUX", "=0");
+}
+
 int GEMALTO_CINTERION_CellularStack::startGNSS() {
     _at.lock();
     _engine = false;
@@ -303,10 +308,6 @@ retry_open:
     int internet_service_id = find_socket_index(socket);
     bool foundSrvType = false;
     bool foundConIdType = false;
-
-    if (GEMALTO_CINTERION::get_module() == GEMALTO_CINTERION::ModuleTX62) {
-        _at.cmd_start_stop("^SICA", "=", "%d%d", 1, _cid);
-    }
 
     _at.cmd_start_stop("^SISS", "?");
     _at.resp_start("^SISS:");

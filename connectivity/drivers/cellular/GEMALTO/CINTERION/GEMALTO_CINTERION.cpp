@@ -51,6 +51,11 @@ AT_CellularNetwork *GEMALTO_CINTERION::open_network_impl(ATHandler &at)
 
 nsapi_error_t GEMALTO_CINTERION::init()
 {
+    // init CMUX if requested
+    if(is_cmux_enabled()){
+        enable_cmux();
+        enableCMUXChannel();
+    }
     nsapi_error_t err = AT_CellularDevice::init();
     if (err != NSAPI_ERROR_OK) {
         return err;
@@ -67,7 +72,6 @@ nsapi_error_t GEMALTO_CINTERION::init()
         tr_error("Cellular model not found!");
         return NSAPI_ERROR_DEVICE_ERROR;
     }
-
     if (memcmp(model, "ELS61", sizeof("ELS61") - 1) == 0) {
         init_module_els61();
     } else if (memcmp(model, "BGS2", sizeof("BGS2") - 1) == 0) {
@@ -83,7 +87,6 @@ nsapi_error_t GEMALTO_CINTERION::init()
         return NSAPI_ERROR_UNSUPPORTED;
     }
     tr_info("Cinterion model %s (%d)", model, _module);
-
     set_at_urcs();
 
     return NSAPI_ERROR_OK;

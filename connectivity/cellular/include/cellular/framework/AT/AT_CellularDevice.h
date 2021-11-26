@@ -84,6 +84,14 @@ public:
 
     virtual nsapi_error_t get_sim_state(SimState &state);
 
+    nsapi_error_t enable_cmux();
+
+    nsapi_error_t config_cmux();
+
+    void set_cmux_status_flag(bool cmux_status);
+
+    virtual bool is_cmux_enabled();
+
     virtual CellularContext *create_context(const char *apn = NULL, bool cp_req = false, bool nonip_req = false);
 
     virtual void delete_context(CellularContext *context);
@@ -206,6 +214,7 @@ private:
 
     std::chrono::duration<int, std::milli> _default_timeout;
     bool _modem_debug_on;
+    bool _cmux_status;
     const intptr_t *_property_array;
 };
 

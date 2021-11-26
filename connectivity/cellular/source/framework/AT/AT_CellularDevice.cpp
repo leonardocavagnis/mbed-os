@@ -241,6 +241,37 @@ nsapi_error_t AT_CellularDevice::get_sim_state(SimState &state)
     return error;
 }
 
+nsapi_error_t AT_CellularDevice::enable_cmux()
+{
+setup_at_handler();
+
+    _at.lock();
+    for (int retry = 1; retry <= 3; retry++) {
+        _at.clear_error();
+        _at.flush();
+        _at.at_cmd_discard("E0", "");
+        if (_at.get_last_error() == NSAPI_ERROR_OK) {
+            _at.at_cmd_discard("+CMUX", "=0");
+            if (_at.get_last_error() == NSAPI_ERROR_OK) {
+                break;
+            }
+        }
+        tr_debug("Wait 100ms to init modem");
+        rtos::ThisThread::sleep_for(100ms); // let modem have time to get ready
+    }
+ return _at.unlock_return_error();
+}
+
+
+bool AT_CellularDevice::is_cmux_enabled()
+{
+    return _cmux_status;
+}
+
+void AT_CellularDevice::set_cmux_status_flag(bool cmux_status)
+{
+    _cmux_status = cmux_status;
+}
 nsapi_error_t AT_CellularDevice::set_pin(const char *sim_pin)
 {
     // if SIM is already in ready state then settings the PIN
