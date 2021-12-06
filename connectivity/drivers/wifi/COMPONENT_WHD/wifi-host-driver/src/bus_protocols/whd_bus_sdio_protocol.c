@@ -732,8 +732,9 @@ whd_result_t whd_bus_sdio_read_backplane_value(whd_driver_t whd_driver, uint32_t
 
     address &= SBSDIO_SB_OFT_ADDR_MASK;
 
-    if (register_length == 4)
+    if (register_length == 4) {
         address |= SBSDIO_SB_ACCESS_2_4B_FLAG;
+    }
 
     CHECK_RETURN(whd_bus_sdio_transfer(whd_driver, BUS_READ, BACKPLANE_FUNCTION, address, register_length, value,
                                        RESPONSE_NEEDED) );
@@ -1002,7 +1003,7 @@ static whd_result_t whd_bus_sdio_download_firmware(whd_driver_t whd_driver)
     }
     if (result != WHD_SUCCESS)
     {
-        WPRINT_WHD_ERROR( ("Error while waiting for high throughput clock\n") );
+        WPRINT_WHD_ERROR( ("Error while reading csr value: %d\n", csr_val) );
         /* Reachable after hitting assert */
         return result;
     }

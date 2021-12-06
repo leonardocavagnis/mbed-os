@@ -251,7 +251,7 @@ cy_rslt_t cyhal_sdio_init(cyhal_sdio_t *obj, cyhal_gpio_t cmd, cyhal_gpio_t clk,
     __HAL_RCC_SDMMC2_RELEASE_RESET();
 
     /* Enable the SDIO Clock */
-    __HAL_RCC_SDMMC2_CLK_ENABLE();
+    //__HAL_RCC_SDMMC2_CLK_ENABLE();
 
 #if !(defined(DUAL_CORE) && defined(CORE_CM4))
     /* Disable DCache for STM32H7 family */
@@ -414,8 +414,8 @@ restart:
     /* Send the command */
     //WPRINT_WHD_DEBUG(("%d bs=%d argument=%x\n",num++,block_size,argument));
     SDMMC2->ARG = argument;
-    cmd = (uint32_t)(SDIO_CMD_53 | SDMMC_RESPONSE_SHORT | SDMMC_WAIT_NO | SDMMC_CPSM_ENABLE | SDMMC_CMD_CMDTRANS);
-    SDMMC2->CMD = cmd;
+    cmd = (uint32_t)(SDIO_CMD_53 | SDMMC_RESPONSE_SHORT | SDMMC_WAIT_NO | SDMMC_CPSM_ENABLE);
+    SDMMC2->CMD |= cmd;
 
     /* Wait for the whole transfer to complete */
     //WPRINT_WHD_DEBUG(("cy_rtos_get_semaphore: %d\n", sdio_transfer_finished_semaphore));
@@ -432,9 +432,11 @@ restart:
     /* Check if there were any SDIO errors */
     if ((SDIO->STA & (SDIO_STA_DTIMEOUT | SDIO_STA_CTIMEOUT)) != 0) {
         WPRINT_WHD_DEBUG(("sdio errors SDIO_STA_DTIMEOUT | SDIO_STA_CTIMEOUT\n"));
+        SDMMC2->CMD = 0;
         goto restart;
     } else if (((SDIO->STA & (SDIO_STA_CCRCFAIL | SDIO_STA_DCRCFAIL | SDIO_STA_TXUNDERR | SDIO_STA_RXOVERR)) != 0)) {
         WPRINT_WHD_DEBUG(("sdio errors SDIO_STA_CCRCFAIL | SDIO_STA_DCRCFAIL | SDIO_STA_TXUNDERR | SDIO_STA_RXOVER \n"));
+        SDMMC2->CMD = 0;
         goto restart;
     }
 
