@@ -24,6 +24,11 @@
 #include "task.h"
 #endif
 
+#if defined(__MBED__)
+#include "mbed_thread.h"
+#include "mbed_wait_api.h"
+#endif
+
 /* initializes the system tick counter
  * return 0 on succes, 1 on failure */
 uint32_t sm_initSleep()
@@ -51,6 +56,8 @@ void sm_sleep(uint32_t msec)
     usleep(microsec);
 #elif defined(USE_RTOS) && USE_RTOS == 1
     vTaskDelay(1 >= pdMS_TO_TICKS(msec) ? 1 : pdMS_TO_TICKS(msec));
+#elif defined(__MBED__)
+    thread_sleep_for(msec);
 #else
     clock_t goal = msec + clock();
     while (goal > clock());
@@ -70,6 +77,8 @@ void sm_usleep(uint32_t microsec)
     usleep(microsec);
 #elif defined(__OpenBSD__)
 	#warning "No sm_usleep implemented"
+#elif defined(__MBED__)
+    wait_us(microsec);
 #else
 	//#warning "No sm_usleep implemented"
 #endif

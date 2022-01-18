@@ -25,13 +25,18 @@
 
 #if USE_RTOS
     static SemaphoreHandle_t gSmComlock; 
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
 #include<pthread.h>
     /* Only for base session with os */
     static pthread_mutex_t gSmComlock;
+#elif __MBED__
+#include "cmsis_os2.h"
+#include "mbed_rtos_storage.h"
+    static osSemaphoreId_t gSmComlock;
+    static mbed_rtos_storage_semaphore_t gSmComlock_mem;
 #endif
 
-#if (__GNUC__ && !AX_EMBEDDED) || (USE_RTOS)
+#if (__GNUC__ && !AX_EMBEDDED) || (USE_RTOS) || (__MBED__)
 #define USE_LOCK 1
 #else
 #define USE_LOCK 0
@@ -50,7 +55,7 @@
         LOG_D("LOCK Released");                                  \
     else                                                         \
         LOG_D("LOCK Releasing failed");
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
 #define LOCK_TXN()                                               \
     LOG_D("Trying to Acquire Lock thread: %ld", pthread_self()); \
     pthread_mutex_lock(&gSmComlock);                             \
@@ -60,6 +65,19 @@
     LOG_D("Trying to Released Lock by thread: %ld", pthread_self()); \
     pthread_mutex_unlock(&gSmComlock);                               \
     LOG_D("LOCK Released by thread: %ld", pthread_self());
+#elif __MBED__
+#define LOCK_TXN()                                               \
+    LOG_D("Trying to Acquire Lock");                             \
+    if (osSemaphoreAcquire(gSmComlock, 0) == osOK)               \
+        LOG_D("LOCK Acquired");                                  \
+    else                                                         \
+        LOG_D("LOCK Acquisition failed");
+#define UNLOCK_TXN()                                             \
+    LOG_D("Trying to Released Lock");                            \
+    if (osSemaphoreRelease(gSmComlock) == osOK)                  \
+        LOG_D("LOCK Released");                                  \
+    else                                                         \
+        LOG_D("LOCK Releasing failed");
 #else
 #define LOCK_TXN() LOG_D("no lock mode");
 #define UNLOCK_TXN() LOG_D("no lock mode");
@@ -81,12 +99,23 @@ U16 smCom_Init(ApduTransceiveFunction_t pTransceive, ApduTransceiveRawFunction_t
         LOG_E("\n xSemaphoreCreateMutex failed");
         return ret;
     }
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
     if (pthread_mutex_init(&gSmComlock, NULL) != 0)
     {
         LOG_E("\n mutex init has failed");
         return ret;
     } 
+#elif __MBED__
+    osSemaphoreAttr_t attr;
+    attr.name = NULL;
+    attr.attr_bits = 0;
+    attr.cb_mem = &gSmComlock_mem;
+    attr.cb_size = sizeof gSmComlock_mem;
+    gSmComlock = osSemaphoreNew(1, 0, &attr);
+    if (gSmComlock == NULL) {
+        LOG_E("\n xSemaphoreCreateMutex failed");
+        return 1;
+    }
 #endif
     pSmCom_Transceive = pTransceive;
     pSmCom_TransceiveRaw = pTransceiveRaw;
@@ -101,8 +130,13 @@ void smCom_DeInit(void)
     	vSemaphoreDelete(gSmComlock);
         gSmComlock = NULL;
     } 
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
     pthread_mutex_destroy(&gSmComlock);
+#elif __MBED__
+    if (gSmComlock != NULL) {
+        osSemaphoreRelease(gSmComlock);
+        gSmComlock = NULL;
+    }
 #endif
     pSmCom_Transceive = NULL;
     pSmCom_TransceiveRaw = NULL;

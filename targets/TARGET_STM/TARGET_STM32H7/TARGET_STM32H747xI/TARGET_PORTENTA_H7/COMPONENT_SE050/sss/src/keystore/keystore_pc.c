@@ -34,7 +34,7 @@
 #include "nxLog_sss.h"
 #include "sm_types.h"
 
-#if (defined(MBEDTLS_FS_IO) && !AX_EMBEDDED) || SSS_HAVE_OPENSSL
+#if (defined(MBEDTLS_FS_IO) && !AX_EMBEDDED && !__MBED__) || SSS_HAVE_OPENSSL
 
 /* ************************************************************************** */
 /* Local Defines                                                              */

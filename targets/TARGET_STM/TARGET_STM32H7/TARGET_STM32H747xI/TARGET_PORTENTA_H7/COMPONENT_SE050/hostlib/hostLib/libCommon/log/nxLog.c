@@ -20,7 +20,7 @@ extern "C" {
 #include "semphr.h"
 #endif
 
-#if (__GNUC__ && !AX_EMBEDDED) || (USE_RTOS)
+#if (__GNUC__ && !AX_EMBEDDED) || (USE_RTOS) || (__MBED__)
 #define USE_LOCK 1
 #else
 #define USE_LOCK 0
@@ -107,10 +107,15 @@ static const char *szLevel[] = {"ERROR", "WARN ", "INFO ", "DEBUG"};
 
 #if USE_RTOS
 static SemaphoreHandle_t gLogginglock;
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
 #include<pthread.h>
 /* Only for base session with os */
 static pthread_mutex_t gLogginglock;
+#elif __MBED__
+#include "cmsis_os2.h"
+#include "mbed_rtos_storage.h"
+    static osSemaphoreId_t gLogginglock;
+    static mbed_rtos_storage_semaphore_t gLogginglock_mem;
 #endif
 static void nLog_AcquireLock();
 static void nLog_ReleaseLock();
@@ -125,9 +130,13 @@ static void nLog_AcquireLock()
         if (xSemaphoreTake(gLogginglock, portMAX_DELAY) != pdTRUE) {
             PRINTF("Acquiring logging semaphore failed");
         }
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
         if (pthread_mutex_lock(&gLogginglock) != 0) {
             PRINTF("Acquiring logging mutext failed");
+        }
+#elif __MBED__
+        if (osSemaphoreAcquire(gLogginglock, 0) != osOK) {
+            PRINTF("Acquiring logging mutext failed\n");
         }
 #endif
     }
@@ -142,9 +151,13 @@ static void nLog_ReleaseLock()
         if (xSemaphoreGive(gLogginglock) != pdTRUE) {
             PRINTF("Releasing logging semaphore failed");
         }
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
         if (pthread_mutex_unlock(&gLogginglock) != 0) {
             PRINTF("Releasing logging semaphore failed");
+        }
+#elif __MBED__
+        if (osSemaphoreRelease(gLogginglock) != osOK) {
+            PRINTF("Releasing logging semaphore failed\n");
         }
 #endif
     }
@@ -160,9 +173,20 @@ uint8_t nLog_Init()
         PRINTF("xSemaphoreCreateMutex failed");
         return 1;
     }
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
     if (pthread_mutex_init(&gLogginglock, NULL) != 0) {
         PRINTF("pthread_mutex_init failed");
+        return 1;
+    }
+#elif __MBED__
+    osSemaphoreAttr_t attr;
+    attr.name = NULL;
+    attr.attr_bits = 0;
+    attr.cb_mem = &gLogginglock_mem;
+    attr.cb_size = sizeof gLogginglock_mem;
+    gLogginglock = osSemaphoreNew(1, 0, &attr);
+    if (gLogginglock == NULL) {
+        PRINTF("xSemaphoreCreateMutex failed");
         return 1;
     }
 #endif
@@ -179,8 +203,13 @@ void nLog_DeInit()
     	vSemaphoreDelete(gLogginglock);
         gLogginglock = NULL;
     }
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
     pthread_mutex_destroy(&gLogginglock);
+#elif __MBED__
+    if (gLogginglock != NULL) {
+        osSemaphoreRelease(gLogginglock);
+        gLogginglock = NULL;
+    }
 #endif
     lockInitialised = false;
 #endif

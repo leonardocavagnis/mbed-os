@@ -8,6 +8,8 @@
 /* Includes                                                                   */
 /* ************************************************************************** */
 
+#if !defined(__MBED__)
+
 #include <ex_sss.h>
 #include <ex_sss_boot.h>
 #include <fsl_sss_se05x_apis.h>
@@ -173,3 +175,5 @@ cleanup:
         sss_asymmetric_context_free(&ctx_verify);
     return status;
 }
+
+#endif //__MBED__

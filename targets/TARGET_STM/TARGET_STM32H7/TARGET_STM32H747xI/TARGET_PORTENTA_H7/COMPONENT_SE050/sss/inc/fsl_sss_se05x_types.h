@@ -25,9 +25,12 @@
 #include "se05x_const.h"
 #include "se05x_tlv.h"
 #include "sm_api.h"
-#if (__GNUC__ && !AX_EMBEDDED)
+#if (__GNUC__ && !AX_EMBEDDED && !__MBED__)
 #include <pthread.h>
 /* Only for base session with os */
+#elif __MBED__
+#include "cmsis_os2.h"
+#include "mbed_rtos_storage.h"
 #endif
 /* FreeRTOS includes. */
 #if USE_RTOS
@@ -101,8 +104,10 @@ typedef struct _sss_se05x_tunnel_context
 /** For systems where we potentially have multi-threaded operations, have a lock */
 #if USE_RTOS
     SemaphoreHandle_t channelLock;
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
     pthread_mutex_t channelLock;
+#elif __MBED__
+    osSemaphoreId_t channelLock;
 #endif
 } sss_se05x_tunnel_context_t;
 

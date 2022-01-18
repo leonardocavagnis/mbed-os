@@ -51,7 +51,7 @@ extern "C" {
     else {                                \
         LOG_D("LOCK Releasing failed");   \
     }
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
 #define LOCK_TXN(lock)                                           \
     LOG_D("Trying to Acquire Lock thread: %ld", pthread_self()); \
     pthread_mutex_lock(&lock);                                   \
@@ -61,12 +61,29 @@ extern "C" {
     LOG_D("Trying to Released Lock by thread: %ld", pthread_self()); \
     pthread_mutex_unlock(&lock);                                     \
     LOG_D("LOCK Released by thread: %ld", pthread_self());
+#elif __MBED__
+#define LOCK_TXN(lock)                                               \
+    LOG_D("Trying to Acquire Lock");                                 \
+    if (osSemaphoreAcquire(lock, 0) == osOK)                         \
+        LOG_D("LOCK Acquired");                                      \
+    else                                                             \
+        LOG_D("LOCK Acquisition failed");
+#define UNLOCK_TXN(lock)                                             \
+    LOG_D("Trying to Released Lock");                                \
+    if (osSemaphoreRelease(lock) == osOK)                            \
+        LOG_D("LOCK Released");                                      \
+    else                                                             \
+        LOG_D("LOCK Releasing failed");
 #endif
 
-#if (__GNUC__ && !AX_EMBEDDED) || (USE_RTOS)
+#if (__GNUC__ && !AX_EMBEDDED) || (USE_RTOS) || (__MBED__)
 #define USE_LOCK 1
 #else
 #define USE_LOCK 0
+#endif
+
+#if __MBED__
+static mbed_rtos_storage_semaphore_t channelLock_mem;
 #endif
 
 static SE05x_ECSignatureAlgo_t se05x_get_ec_sign_hash_mode(sss_algorithm_t algorithm);
@@ -6231,13 +6248,24 @@ sss_status_t sss_se05x_tunnel_context_init(sss_se05x_tunnel_context_t *context, 
         LOG_E("xSemaphoreCreateMutex failed");
         return kStatus_SSS_Fail;
     }
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
     if (pthread_mutex_init(&context->channelLock, NULL) != 0) {
         LOG_E("\n mutex init has failed");
         return kStatus_SSS_Fail;
     }
     else {
         LOG_D("Mutex Init successfull");
+    }
+#elif __MBED__
+    osSemaphoreAttr_t attr;
+    attr.name = NULL;
+    attr.attr_bits = 0;
+    attr.cb_mem = &channelLock_mem;
+    attr.cb_size = sizeof channelLock_mem;
+    context->channelLock = osSemaphoreNew(1, 0, &attr);
+    if (context->channelLock == NULL) {
+        LOG_E("xSemaphoreCreateMutex failed");
+        return kStatus_SSS_Fail;
     }
 #endif
     return retval;
@@ -6258,8 +6286,10 @@ void sss_se05x_tunnel_context_free(sss_se05x_tunnel_context_t *context)
 {
 #if USE_RTOS
     vSemaphoreDelete(context->channelLock);
-#elif (__GNUC__ && !AX_EMBEDDED)
+#elif (__GNUC__ && !AX_EMBEDDED && !__MBED__)
     pthread_mutex_destroy(&context->channelLock);
+#elif __MBED__
+    osSemaphoreRelease(context->channelLock);
 #endif
     memset(context, 0, sizeof(*context));
 }

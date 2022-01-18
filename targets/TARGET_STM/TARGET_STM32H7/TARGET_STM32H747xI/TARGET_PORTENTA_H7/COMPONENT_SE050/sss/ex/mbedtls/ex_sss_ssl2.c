@@ -22,6 +22,8 @@
 
 /* clang-format off */
 
+#if !defined(__MBED__)
+
 #if defined(SSS_USE_FTR_FILE)
 #include "fsl_sss_ftr.h"
 #else
@@ -2270,3 +2272,4 @@ MBEDTLS_SSL_CLI_C && MBEDTLS_NET_C && MBEDTLS_RSA_C &&
 MBEDTLS_CTR_DRBG_C MBEDTLS_TIMING_C */
 
 /* clang-format on */
+#endif //__MBED__

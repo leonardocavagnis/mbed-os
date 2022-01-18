@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __STDC__
+#if (__STDC__ && !__MBED__)
 #include <unistd.h>
 #endif
 
@@ -26,11 +26,16 @@
 #define ARRAY_SIZE(array) (sizeof(array) / (sizeof(array[0])))
 #endif
 
+#if __MBED__
+#include "mbed_assert.h"
+#define assert_static(e) MBED_ASSERT(e)
+#else
 #define assert_static(e)                    \
     {                                       \
         char assert_static__[(e) ? 1 : -1]; \
         assert_static__;                    \
     }
+#endif
 
 /** Compile time assert */
 #define SSS_ASSERT(condition) assert_static(condition)

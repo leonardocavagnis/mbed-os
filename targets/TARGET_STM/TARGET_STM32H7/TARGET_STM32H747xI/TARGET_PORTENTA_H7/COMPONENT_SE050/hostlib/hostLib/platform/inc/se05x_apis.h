@@ -14,5 +14,7 @@
 #define SE_RESET_LOGIC 1
 
 void se05x_ic_reset(void);
+void se05x_ic_power_on(void);
+void se05x_ic_power_off(void);
 
 #endif // _SE05X_API_H
