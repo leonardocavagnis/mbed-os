@@ -172,7 +172,7 @@
  */
 
 /** Use SSS Layer ALT implementation */
-#define SSS_HAVE_MBEDTLS_ALT_SSS 0
+#define SSS_HAVE_MBEDTLS_ALT_SSS 1
 
 /** Legacy implementation */
 #define SSS_HAVE_MBEDTLS_ALT_A71CH 0
@@ -180,7 +180,7 @@
 /** Not using any mbedTLS_ALT
  *
  * When this is selected, cloud demos can not work with mbedTLS */
-#define SSS_HAVE_MBEDTLS_ALT_NONE 1
+#define SSS_HAVE_MBEDTLS_ALT_NONE 0
 
 #if (( 0                             \
     + SSS_HAVE_MBEDTLS_ALT_SSS       \
