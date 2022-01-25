@@ -3697,7 +3697,12 @@
         "macros_add": [
             "MBEDTLS_FS_IO",
             "MBEDTLS_SHA1_C",
-            "CM4_BOOT_BY_APPLICATION"
+            "CM4_BOOT_BY_APPLICATION",
+            "CORE_CM4",
+            "MBED_MPU_CUSTOM"
+        ],
+        "device_has_remove": [
+            "MPU"
         ],
         "detect_code": ["0813"],
         "overrides": {
