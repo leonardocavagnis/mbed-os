@@ -15,7 +15,7 @@
  * - 0 => Disable Debug level logging.  This has to be
  *        enabled individually by other logging
  *        header/source files */
-#define NX_LOG_ENABLE_DEFAULT_DEBUG 0
+#define NX_LOG_ENABLE_DEFAULT_DEBUG 1
 
 /* Same as NX_LOG_ENABLE_DEFAULT_DEBUG but for Info Level */
 #define NX_LOG_ENABLE_DEFAULT_INFO 1
