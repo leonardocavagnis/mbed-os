@@ -3618,7 +3618,8 @@
             "QSPIF",
             "WHD",
             "4343W_FS",
-            "CYW43XXX"
+            "CYW43XXX",
+            "SE050"
         ],
         "macros_add": [
             "MBEDTLS_FS_IO",
