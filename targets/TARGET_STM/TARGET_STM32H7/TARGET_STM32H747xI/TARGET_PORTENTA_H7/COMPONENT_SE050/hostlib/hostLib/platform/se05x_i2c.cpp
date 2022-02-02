@@ -22,10 +22,10 @@ static I2C * se05x_i2c;
 
 i2c_error_t axI2CInit(void **conn_ctx, const char *pDevName)
 {
-    se05x_i2c = new I2C(PB_7, PB_6);
+    se05x_i2c = new I2C(MBED_CONF_TARGET_SE050_SDA, MBED_CONF_TARGET_SE050_SCL);
     if(se05x_i2c != NULL) 
     {
-        se05x_i2c->frequency(400000);
+        se05x_i2c->frequency(MBED_CONF_TARGET_SE050_I2C_FREQ);
         return I2C_OK;
     }
     return I2C_FAILED;

@@ -19,10 +19,7 @@
 #include "sm_timer.h"
 #include "mbed.h"
 
-#define NICLA_VISION_SE05X_ENA_PIN PG_0
-#define PORTENTA_H7_SE05X_ENA_PIN PI_12
-
-static DigitalOut se05x_ic_enable(PORTENTA_H7_SE05X_ENA_PIN, 0);
+static DigitalOut se05x_ic_enable(MBED_CONF_TARGET_SE050_ENA, 0);
 
 void se05x_ic_reset(void)
 {
