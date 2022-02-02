@@ -3626,7 +3626,9 @@
             "MBEDTLS_SHA1_C",
             "CM4_BOOT_BY_APPLICATION",
             "QSPI_NO_SAMPLE_SHIFT",
-            "CYW43XXX_UNBUFFERED_UART"
+            "CYW43XXX_UNBUFFERED_UART",
+            "T1oI2C",
+            "T1oI2C_UM11225"
         ],
         "device_has_add": [
             "USBDEVICE",
