@@ -3644,7 +3644,8 @@
             "QSPI_NO_SAMPLE_SHIFT",
             "CYW43XXX_UNBUFFERED_UART",
             "T1oI2C",
-            "T1oI2C_UM11225"
+            "T1oI2C_UM11225",
+            "FLOW_SILENT"
         ],
         "device_has_add": [
             "USBDEVICE",
