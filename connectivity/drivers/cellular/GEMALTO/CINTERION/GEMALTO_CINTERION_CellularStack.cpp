@@ -276,15 +276,16 @@ nsapi_error_t GEMALTO_CINTERION_CellularStack::gethostbyname(const char *host, S
     }
 
     if (!address->set_ip_address(host)) {
-        //_at.set_at_timeout(1min);
-        _at.cmd_start_stop("^SISX" , "=" , "%s%d%s", "HostByName" , _cid, host);
+        // _at.set_at_timeout(1min);
+        _at.cmd_start_stop("^SISX", "=", "%s%d%s", "HostByName", _cid, host);
         _at.resp_start("^SISX: \"HostByName\",");
         char ipAddress[NSAPI_IP_SIZE];
         int size = _at.read_string(ipAddress, sizeof(ipAddress));
+        _at.resp_stop();
         if (size > 0) {
             //Valid string received
             tr_info("Read %d bytes. Valid string: %s\n", size, ipAddress);
-            _at.restore_at_timeout();
+            // _at.restore_at_timeout();
             if (!address->set_ip_address(ipAddress)) {
                 _at.unlock();
                 return NSAPI_ERROR_DNS_FAILURE;
