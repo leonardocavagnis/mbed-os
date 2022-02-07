@@ -60,7 +60,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     gpio_set_function(rx, GPIO_FUNC_UART);
 
     //uart_set_translate_crlf(obj->dev, false);
-    uart_set_fifo_enabled(obj->dev, false);
+    uart_set_fifo_enabled(obj->dev, true);
 
     if (tx == STDIO_UART_TX) {
         memmove(&stdio_uart, obj, sizeof(serial_t));
@@ -77,7 +77,7 @@ void serial_baud(serial_t *obj, int baudrate)
 {
     obj->baud = (uint32_t)baudrate;
     uart_init(obj->dev, obj->baud);
-    uart_set_fifo_enabled(obj->dev, false);
+    uart_set_fifo_enabled(obj->dev, true);
 }
 
 void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_bits)
