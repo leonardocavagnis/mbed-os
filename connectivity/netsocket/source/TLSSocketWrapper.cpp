@@ -32,6 +32,12 @@
 #include "psa/crypto.h"
 #endif
 
+#if defined(COMPONENT_SE050) && defined(MBEDTLS_ECDH_ALT) && SSS_HAVE_ALT_SSS
+extern "C" {
+#include "sss_mbedtls.h"
+}
+#endif
+
 // This class requires Mbed TLS SSL/TLS client code
 #if defined(MBEDTLS_SSL_CLI_C)
 
@@ -205,6 +211,41 @@ nsapi_error_t TLSSocketWrapper::set_client_cert_key(const void *client_cert, siz
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 }
 
+#if defined(COMPONENT_SE050) && defined(MBEDTLS_ECDH_ALT) && SSS_HAVE_ALT_SSS
+nsapi_error_t TLSSocketWrapper::set_client_cert_key(const void *client_cert, size_t client_cert_len,
+                                                    sss_object_t *pkeyObject)
+{
+#if !defined(MBEDTLS_X509_CRT_PARSE_C) || !defined(MBEDTLS_PK_C)
+    return NSAPI_ERROR_UNSUPPORTED;
+#else
+
+    int ret;
+    mbedtls_x509_crt *crt = new (std::nothrow) mbedtls_x509_crt;
+    if (!crt) {
+        return NSAPI_ERROR_NO_MEMORY;
+    }
+    mbedtls_x509_crt_init(crt);
+    if ((ret = mbedtls_x509_crt_parse(crt, static_cast<const unsigned char *>(client_cert),
+                                      client_cert_len)) != 0) {
+        print_mbedtls_error("mbedtls_x509_crt_parse", ret);
+        mbedtls_x509_crt_free(crt);
+        delete crt;
+        return NSAPI_ERROR_PARAMETER;
+    }
+    mbedtls_pk_init(&_pkctx);
+    if ((ret = sss_mbedtls_associate_keypair(&_pkctx, pkeyObject)) != 0) {
+        print_mbedtls_error("sss_mbedtls_associate_keypair", ret);
+        mbedtls_x509_crt_free(crt);
+        delete crt;
+        return NSAPI_ERROR_PARAMETER;
+    }
+    set_own_cert(crt);
+    _clicert_allocated = true;
+
+    return NSAPI_ERROR_OK;
+#endif /* MBEDTLS_X509_CRT_PARSE_C */
+}
+#endif
 
 nsapi_error_t TLSSocketWrapper::start_handshake(bool first_call)
 {

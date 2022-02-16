@@ -148,6 +148,9 @@ public:
      * @retval NSAPI_ERROR_PARAMETER in case the provided root_ca parameter failed parsing.
      */
     nsapi_error_t set_client_cert_key(const char *client_cert_pem, const char *client_private_key_pem);
+#if defined(COMPONENT_SE050) && defined(MBEDTLS_ECDH_ALT) && SSS_HAVE_ALT_SSS
+    nsapi_error_t set_client_cert_key(const void *client_cert, size_t client_cert_len, sss_object_t *pkeyObject);
+#endif
 
     /** Send data over a TLS socket.
      *
