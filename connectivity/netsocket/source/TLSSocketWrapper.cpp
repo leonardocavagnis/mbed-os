@@ -236,6 +236,9 @@ nsapi_error_t TLSSocketWrapper::set_client_cert_key(const void *client_cert, siz
     set_own_cert(crt);
     _clicert_allocated = true;
 
+    static const int CIPHER_SUITES[] = { MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 };
+    mbedtls_ssl_conf_ciphersuites(get_ssl_config(), CIPHER_SUITES);
+
     _sss_key_pair_ptr = pkeyObject;
     _sss_ks_ptr = &deviceCtx->ks;
 
