@@ -307,6 +307,12 @@ nsapi_error_t TLSSocketWrapper::start_handshake(bool first_call)
     _transport->set_blocking(false);
     _transport->sigio(mbed::callback(this, &TLSSocketWrapper::event));
 
+#if defined(COMPONENT_SE050) && defined(MBEDTLS_ECDH_ALT) && SSS_HAVE_ALT_SSS
+    if ((_sss_key_pair_ptr != nullptr) && (_sss_ks_ptr != nullptr)) {
+        sss_mbedtls_associate_ecdhctx(_ssl.handshake, _sss_key_pair_ptr, _sss_ks_ptr);
+    }
+#endif
+
     // Defines MBEDTLS_SSL_CONF_RECV/SEND/RECV_TIMEOUT define global functions which should be the same for all
     // callers of mbedtls_ssl_set_bio_ctx and there should be only one ssl context. If these rules don't apply,
     // these defines can't be used.
