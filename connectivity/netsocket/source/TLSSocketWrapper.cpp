@@ -32,12 +32,6 @@
 #include "psa/crypto.h"
 #endif
 
-#if defined(COMPONENT_SE050) && defined(MBEDTLS_ECDH_ALT) && SSS_HAVE_ALT_SSS
-extern "C" {
-#include "sss_mbedtls.h"
-}
-#endif
-
 // This class requires Mbed TLS SSL/TLS client code
 #if defined(MBEDTLS_SSL_CLI_C)
 
@@ -213,7 +207,7 @@ nsapi_error_t TLSSocketWrapper::set_client_cert_key(const void *client_cert, siz
 
 #if defined(COMPONENT_SE050) && defined(MBEDTLS_ECDH_ALT) && SSS_HAVE_ALT_SSS
 nsapi_error_t TLSSocketWrapper::set_client_cert_key(const void *client_cert, size_t client_cert_len,
-                                                    sss_object_t *pkeyObject)
+                                                    sss_object_t *pkeyObject, ex_sss_boot_ctx_t *deviceCtx)
 {
 #if !defined(MBEDTLS_X509_CRT_PARSE_C) || !defined(MBEDTLS_PK_C)
     return NSAPI_ERROR_UNSUPPORTED;
@@ -241,6 +235,9 @@ nsapi_error_t TLSSocketWrapper::set_client_cert_key(const void *client_cert, siz
     }
     set_own_cert(crt);
     _clicert_allocated = true;
+
+    _sss_key_pair_ptr = pkeyObject;
+    _sss_ks_ptr = &deviceCtx->ks;
 
     return NSAPI_ERROR_OK;
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
