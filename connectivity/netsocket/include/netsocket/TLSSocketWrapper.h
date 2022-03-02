@@ -366,8 +366,8 @@ private:
 #endif
 
 #if defined(COMPONENT_SE050) && defined(MBEDTLS_ECDH_ALT) && SSS_HAVE_ALT_SSS
-    sss_object_t *_sss_key_pair_ptr;
-    sss_key_store_t *_sss_ks_ptr;
+    sss_object_t *_sss_key_pair_ptr = nullptr;
+    sss_key_store_t *_sss_ks_ptr = nullptr;
 #endif
 
     DRBG_CTX _drbg;
