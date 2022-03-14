@@ -71,9 +71,11 @@ int SerialBase::readable()
 {
     lock();
     int ret = serial_readable(&_serial);
+#if DEVICE_SERIAL_FC
     if (sw_flow_control == true && _rts_pin != nullptr) {
         *_rts_pin = !!!ret;
     }
+#endif
     unlock();
     return ret;
 }
@@ -83,9 +85,11 @@ int SerialBase::writeable()
 {
     lock();
     int ret = serial_writable(&_serial);
+#if DEVICE_SERIAL_FC
     if (sw_flow_control) {
         ret = ret & !(*_cts_pin);
     }
+#endif
     unlock();
     return ret;
 }
