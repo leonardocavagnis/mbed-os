@@ -231,6 +231,9 @@
         "OPTA": {
             "mem-size": 16000
         },
+        "GIGA": {
+            "mem-size": 16000
+        },
         "FVP_MPS2_M3": {
             "mem-size": 36560
         },

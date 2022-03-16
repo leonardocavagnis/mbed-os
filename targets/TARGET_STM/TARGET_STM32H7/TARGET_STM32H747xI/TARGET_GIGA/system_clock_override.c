@@ -55,7 +55,7 @@ uint8_t SetSysClock_PLL_HSI(void);
   * @retval None
   */
 
-MBED_WEAK void SetSysClock(void)
+void SetSysClock(void)
 {
 #if ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC)
     /* 1- Try to start with HSE and external clock (MCO from STLink PCB part) */
@@ -82,7 +82,7 @@ MBED_WEAK void SetSysClock(void)
 /******************************************************************************/
 /*            PLL (clocked by HSE) used as System clock source                */
 /******************************************************************************/
-MBED_WEAK uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
+uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
 {
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -103,17 +103,14 @@ MBED_WEAK uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
     RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-#if HSE_VALUE==25000000
-    RCC_OscInitStruct.PLL.PLLM = 5;   // 5 MHz
-    RCC_OscInitStruct.PLL.PLLN = 192; // 960 MHz
-#elif HSE_VALUE==16000000
-    RCC_OscInitStruct.PLL.PLLM = 8;   // 5 MHz
-    RCC_OscInitStruct.PLL.PLLN = 120; // 960 MHz
+#if HSE_VALUE==16000000
+    RCC_OscInitStruct.PLL.PLLM = 2;
+    RCC_OscInitStruct.PLL.PLLN = 120;
 #else
 #error Unsupported externall clock value, check HSE_VALUE define
 #endif
-    RCC_OscInitStruct.PLL.PLLP = 2;   // PLLCLK = SYSCLK = 480 MHz
-    RCC_OscInitStruct.PLL.PLLQ = 96;  // PLL1Q used for FDCAN = 10 MHz
+    RCC_OscInitStruct.PLL.PLLP = 2;
+    RCC_OscInitStruct.PLL.PLLQ = 16;
     RCC_OscInitStruct.PLL.PLLR = 2;
     RCC_OscInitStruct.PLL.PLLFRACN = 0;
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -161,7 +158,7 @@ MBED_WEAK uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
 /******************************************************************************/
 /*            PLL (clocked by HSI) used as System clock source                */
 /******************************************************************************/
-MBED_WEAK uint8_t SetSysClock_PLL_HSI(void)
+uint8_t SetSysClock_PLL_HSI(void)
 {
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
@@ -172,19 +169,22 @@ MBED_WEAK uint8_t SetSysClock_PLL_HSI(void)
     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
     // Enable HSI oscillator and activate PLL with HSI as source
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_CSI;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI48;
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
     RCC_OscInitStruct.HSEState = RCC_HSE_OFF;
-    RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
+    RCC_OscInitStruct.CSIState = RCC_CSI_ON;
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLM = 8;    // 8 MHz
     RCC_OscInitStruct.PLL.PLLN = 120;  // 960 MHz
     RCC_OscInitStruct.PLL.PLLP = 2;    // 480 MHz
-    RCC_OscInitStruct.PLL.PLLQ = 96;   // PLL1Q used for FDCAN = 10 MHz
+    RCC_OscInitStruct.PLL.PLLQ = 16;   // PLL1Q used for FDCAN = 10 MHz
     RCC_OscInitStruct.PLL.PLLR = 2;
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.CSICalibrationValue = RCC_CSICALIBRATION_DEFAULT;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         return 0; // FAIL
     }
@@ -203,6 +203,35 @@ MBED_WEAK uint8_t SetSysClock_PLL_HSI(void)
         return 0; // FAIL
     }
 
+#if DEVICE_USBDEVICE
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+        return 0; // FAIL
+    }
+
+    HAL_PWREx_EnableUSBVoltageDetector();
+#endif
+
+    __HAL_RCC_CSI_ENABLE() ;
+    __HAL_RCC_SYSCFG_CLK_ENABLE() ;
+    HAL_EnableCompensationCell();
+
     return 1; // OK
 }
 #endif /* ((CLOCK_SOURCE) & USE_PLL_HSI) */
+
+#if defined (CORE_CM4)
+void HSEM2_IRQHandler(void)
+{
+    HAL_HSEM_IRQHandler();
+}
+#endif
+ 
+#if defined (CORE_CM7)
+void HSEM1_IRQHandler(void)
+{
+    HAL_HSEM_IRQHandler();
+}
+#endif
