@@ -483,6 +483,7 @@ int FATFileSystem::remove(const char *path)
     return fat_error_remap(res);
 }
 
+#if !defined(TARGET_PORTENTA_H7_M7) || !defined(MCUBOOT_BOOTLOADER_BUILD)
 int FATFileSystem::rename(const char *oldpath, const char *newpath)
 {
     Deferred<const char *> oldfpath = fat_path_prefix(_id, oldpath);
@@ -511,6 +512,7 @@ int FATFileSystem::mkdir(const char *path, mode_t mode)
     }
     return fat_error_remap(res);
 }
+#endif
 
 int FATFileSystem::stat(const char *path, struct stat *st)
 {

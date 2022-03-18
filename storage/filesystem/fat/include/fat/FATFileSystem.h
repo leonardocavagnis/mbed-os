@@ -120,6 +120,7 @@ public:
      */
     virtual int remove(const char *path);
 
+#if !defined(TARGET_PORTENTA_H7_M7) || !defined(MCUBOOT_BOOTLOADER_BUILD)
     /** Rename a file in the file system.
      *
      *  @param path     The current name of the file to rename.
@@ -127,6 +128,7 @@ public:
      *  @return         0 on success, negative error code on failure.
      */
     virtual int rename(const char *path, const char *newpath);
+#endif
 
     /** Store information about the file in a stat structure.
      *
@@ -136,6 +138,7 @@ public:
      */
     virtual int stat(const char *path, struct stat *st);
 
+#if !defined(TARGET_PORTENTA_H7_M7) || !defined(MCUBOOT_BOOTLOADER_BUILD)
     /** Create a directory in the file system.
      *
      *  @param path     The name of the directory to create.
@@ -143,6 +146,7 @@ public:
      *  @return         0 on success, negative error code on failure.
      */
     virtual int mkdir(const char *path, mode_t mode);
+#endif
 
     /** Store information about the mounted file system in a statvfs structure.
      *
