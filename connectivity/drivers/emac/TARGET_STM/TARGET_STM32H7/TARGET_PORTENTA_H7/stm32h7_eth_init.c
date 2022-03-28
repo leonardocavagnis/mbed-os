@@ -100,9 +100,12 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
         HAL_GPIO_Init(GPIOC, &gpio_eth_rst_init_structure);
         HAL_GPIO_WritePin(GPIOC, ETH_RXD0_Pin, 1);
         HAL_GPIO_WritePin(GPIOC, ETH_RXD1_Pin, 1);
-        gpio_eth_rst_init_structure.Pin = ETH_CRS_DV_Pin;
+
+        gpio_eth_rst_init_structure.Mode = GPIO_MODE_OUTPUT_PP;
+        gpio_eth_rst_init_structure.Pin = GPIO_PIN_1;
+        gpio_eth_rst_init_structure.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOA, &gpio_eth_rst_init_structure);
-        HAL_GPIO_WritePin(GPIOA, ETH_CRS_DV_Pin, 1);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, 1);
 
         HAL_Delay(25);
         HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_15, 0);
@@ -127,14 +130,35 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
         GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
         HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = ETH_MDC_SAI4_D1_Pin | ETH_RXD0_Pin | ETH_RXD1_Pin;
+        GPIO_InitStruct.Pin = ETH_MDC_SAI4_D1_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = ETH_MDIO_Pin | ETH_REF_CLK_Pin | ETH_CRS_DV_Pin;
+        GPIO_InitStruct.Pin = ETH_RXD0_Pin | ETH_RXD1_Pin;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = ETH_CRS_DV_Pin;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = ETH_MDIO_Pin;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = ETH_REF_CLK_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
