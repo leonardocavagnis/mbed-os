@@ -241,6 +241,7 @@ int LittleFileSystem::unmount()
     return res;
 }
 
+#if !defined(TARGET_PORTENTA_H7_M7) || !defined(MCUBOOT_BOOTLOADER_BUILD)
 int LittleFileSystem::format(BlockDevice *bd,
                              lfs_size_t read_size, lfs_size_t prog_size,
                              lfs_size_t block_size, lfs_size_t lookahead)
@@ -338,6 +339,7 @@ int LittleFileSystem::reformat(BlockDevice *bd)
     _mutex.unlock();
     return 0;
 }
+#endif
 
 int LittleFileSystem::remove(const char *filename)
 {
@@ -349,6 +351,7 @@ int LittleFileSystem::remove(const char *filename)
     return lfs_toerror(err);
 }
 
+#if !defined(TARGET_PORTENTA_H7_M7) || !defined(MCUBOOT_BOOTLOADER_BUILD)
 int LittleFileSystem::rename(const char *oldname, const char *newname)
 {
     _mutex.lock();
@@ -358,6 +361,7 @@ int LittleFileSystem::rename(const char *oldname, const char *newname)
     _mutex.unlock();
     return lfs_toerror(err);
 }
+#endif
 
 int LittleFileSystem::mkdir(const char *name, mode_t mode)
 {
