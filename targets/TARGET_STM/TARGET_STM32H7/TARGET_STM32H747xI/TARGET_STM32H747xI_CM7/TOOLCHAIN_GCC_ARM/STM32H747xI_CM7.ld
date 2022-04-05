@@ -114,7 +114,6 @@ SECTIONS
         *(.dtors)
 
 #if defined(MCUBOOT_BOOTLOADER_BUILD) && defined(TARGET_PORTENTA_H7_M7)
-        *lib*.o(.rodata*)
         *ltrans0*.o(.rodata*)
         *ltrans1*.o(.rodata*)
         *ltrans2*.o(.rodata*)
@@ -123,6 +122,8 @@ SECTIONS
 
         . = ABSOLUTE(0x0801F000);
         KEEP(*(.bootloader_version))
+
+        *lib*.o(.rodata*)
 #endif
 
         *(.rodata*)
