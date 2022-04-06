@@ -3656,7 +3656,8 @@
         ],
         "features": [
             "BLE"
-        ]
+        ],
+        "device_name": "STM32H747XIHx"
     },
     "PORTENTA_H7_M4": {
         "inherits": ["PORTENTA_H7"],
