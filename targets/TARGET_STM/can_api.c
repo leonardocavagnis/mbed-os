@@ -408,7 +408,11 @@ int can_write(can_t *obj, CAN_Message msg, int cc)
         TxHeader.IdType = FDCAN_EXTENDED_ID;
     }
 
-    TxHeader.TxFrameType = FDCAN_DATA_FRAME;
+    if (msg.type == CANData) {
+        TxHeader.TxFrameType = FDCAN_DATA_FRAME;
+    } else {
+        TxHeader.TxFrameType = FDCAN_REMOTE_FRAME;
+    }
     TxHeader.DataLength = msg.len << 16;
     TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
