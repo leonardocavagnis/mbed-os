@@ -87,19 +87,19 @@ static void _gpio_irq(uint gpio, uint32_t events)
     m_irq_handler(m_channel_ids[gpio], ev);
 }
 
-int gpio_irq_init(gpio_irq_t *obj, PinName pin, gpio_irq_handler handler, uint32_t id)
+int gpio_irq_init(gpio_irq_t *obj, PinName pin, gpio_irq_handler handler, uintptr_t context)
 {
     if (pin == NC) {
         return -1;
     }
     MBED_ASSERT((uint32_t)pin < GPIO_PIN_COUNT);
 
-    m_channel_ids[pin]          = id;
+    m_channel_ids[pin]          = context;
     m_irq_handler               = handler;
 
     obj->irq_n = IO_IRQ_BANK0;
     obj->pin = pin;
-    obj->irq_index = id;
+    obj->irq_index = context;
 
     return 0;
 }
