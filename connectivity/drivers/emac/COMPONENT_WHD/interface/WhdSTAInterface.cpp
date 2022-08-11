@@ -178,7 +178,10 @@ static void *whd_wifi_link_state_change_handler(whd_interface_t ifp,
             (event_header->event_type == WLC_E_DISASSOC_IND) ||
             ((event_header->event_type == WLC_E_PSK_SUP) &&
             (event_header->status == WLC_SUP_KEYED) &&
-            (event_header->reason == WLC_E_SUP_DEAUTH))) {
+            (event_header->reason == WLC_E_SUP_DEAUTH)) ||
+            ((event_header->event_type == WLC_E_LINK) &&
+            (event_header->status == WLC_E_STATUS_SUCCESS) &&
+            (event_header->reason == WLC_E_REASON_LOW_RSSI))) {
         whd_emac_wifi_link_state_changed(ifp, WHD_FALSE);
         return handler_user_data;
     }
