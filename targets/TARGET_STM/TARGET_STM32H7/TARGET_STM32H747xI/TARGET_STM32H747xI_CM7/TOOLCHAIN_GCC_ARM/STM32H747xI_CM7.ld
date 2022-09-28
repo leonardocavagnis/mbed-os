@@ -113,7 +113,7 @@ SECTIONS
         *(SORT(.dtors.*))
         *(.dtors)
 
-#if defined(MCUBOOT_BOOTLOADER_BUILD) && ( defined(TARGET_PORTENTA_H7_M7) || defined(TARGET_NICLA_VISION))
+#if (defined(MCUBOOT_BOOTLOADER_BUILD) || defined(BOOTLOADER_BUILD))  && (defined(TARGET_PORTENTA_H7_M7) || defined(TARGET_NICLA_VISION))
         *ltrans0*.o(.rodata*)
         *ltrans1*.o(.rodata*)
         *ltrans2*.o(.rodata*)
