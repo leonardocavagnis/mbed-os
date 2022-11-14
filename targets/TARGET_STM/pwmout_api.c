@@ -359,10 +359,10 @@ void pwmout_write(pwmout_t *obj, float value)
 
 #if defined(HRTIM1)
     if (obj->pwm == PWM_I) {
-        if (value < (float)0.0) {
-            value = 0.0;
-        } else if (value > (float)1.0) {
+        if (value <= (float)0.0) {
             value = 1.0;
+        } else if (value >= (float)1.0) {
+            value = 0.0;
         }
         obj->pulse = (uint32_t)((float)obj->period * value + 0.5);
         sConfig_compare.CompareValue =  obj->pulse;
