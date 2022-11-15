@@ -46,7 +46,7 @@ MEMORY
 }
 
 
-#if defined(MCUBOOT_BOOTLOADER_BUILD) && ( defined(TARGET_PORTENTA_H7_M7) || defined(TARGET_NICLA_VISION) || defined(TARGET_OPTA))
+#if defined(MCUBOOT_BOOTLOADER_BUILD) && ( defined(TARGET_PORTENTA_H7_M7) || defined(TARGET_NICLA_VISION) || defined(TARGET_OPTA) || defined(TARGET_GIGA))
 _ConfigStart = 0x0802F000;
 _IdentificationStart = 0x080002F0;
 _EncryptKeyStart = 0x08000300;
@@ -88,7 +88,7 @@ SECTIONS
     .text :
     {
         KEEP(*(.isr_vector))
-#if defined(MCUBOOT_BOOTLOADER_BUILD) && ( defined(TARGET_PORTENTA_H7_M7) || defined(TARGET_NICLA_VISION) || defined(TARGET_OPTA))
+#if defined(MCUBOOT_BOOTLOADER_BUILD) && ( defined(TARGET_PORTENTA_H7_M7) || defined(TARGET_NICLA_VISION) || defined(TARGET_OPTA) || defined(TARGET_GIGA))
         . = ABSOLUTE(0x080002F0);
         KEEP(*(.bootloader_identification))
         KEEP(*(.signing_key))
@@ -131,7 +131,7 @@ SECTIONS
 
         *lib*.o(.rodata*)
 
-#if (defined(MCUBOOT_BOOTLOADER_BUILD) || defined(BOOTLOADER_BUILD))  && ( defined(TARGET_NICLA_VISION) || defined(TARGET_OPTA))
+#if (defined(MCUBOOT_BOOTLOADER_BUILD) || defined(BOOTLOADER_BUILD))  && ( defined(TARGET_NICLA_VISION) || defined(TARGET_OPTA) || defined(TARGET_GIGA))
         . = ABSOLUTE(0x0801F000);
         KEEP(*(.bootloader_version))
 #endif
