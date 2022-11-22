@@ -157,6 +157,11 @@ wiced_result_t wiced_filesystem_init(void)
     }
 }
 
+wiced_result_t wiced_filesystem_mount_default(void)
+{
+    return wiced_filesystem_mount(mbr_bd, 0, &resource_fs_handle, WIFI_DEFAULT_MOUNT_NAME);
+}
+
 wiced_result_t wiced_filesystem_mount(BlockDevice *device, wiced_filesystem_handle_type_t fs_type, wiced_filesystem_t *fs_handle_out, const char *mounted_name)
 {
     wifi_fs = new FATFileSystem(mounted_name);
