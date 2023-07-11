@@ -76,6 +76,23 @@ void SetSysClock(void)
             }
         }
     }
+
+    // Set seemingly unrelated pins that prevent QSPI from working
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Mode       = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Speed      = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Pull       = GPIO_NOPULL;
+    GPIO_InitStruct.Alternate  = 0;
+
+    GPIO_InitStruct.Pin        =  GPIO_PIN_13;
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    __HAL_RCC_GPIOD_CLK_DISABLE();
+
+    GPIO_InitStruct.Pin        =  GPIO_PIN_7;
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+    __HAL_RCC_GPIOF_CLK_DISABLE();
 }
 
 #if ( ((CLOCK_SOURCE) & USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC) )
