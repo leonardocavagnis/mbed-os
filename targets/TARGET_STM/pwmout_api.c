@@ -53,6 +53,8 @@ static hrtim_t hrtim_timer;
 static HRTIM_HandleTypeDef HrtimHandle;
 static HRTIM_CompareCfgTypeDef sConfig_compare;
 static HRTIM_TimeBaseCfgTypeDef sConfig_time_base;
+
+static void _pwmout_obj_period_us(pwmout_t *obj, int us);
 #endif
 
 /* Convert STM32 Cube HAL channel to LL channel */
@@ -143,22 +145,8 @@ static void _pwmout_init_direct(pwmout_t *obj, const PinMap *pinmap)
         pin_mode(pinmap->pin, PullNone);
 
         // Initialize obj with default values (period 550Hz, duty 0%)
-        uint32_t frequency;
-        uint32_t clocksource = __HAL_RCC_GET_HRTIM1_SOURCE();
-        switch (clocksource) {
-            case RCC_HRTIM1CLK_TIMCLK:
-                frequency = HAL_RCC_GetHCLKFreq();
-                break;
-            case RCC_HRTIM1CLK_CPUCLK:
-                frequency = HAL_RCC_GetSysClockFreq();
-                break;
-        }
-        obj->period = 18000 * (frequency / 1000000) / 4;
-        if (obj->period > 0xFFDFU) {
-            obj->period = 0xFFDFU;
-        }
+        _pwmout_obj_period_us(obj, 18000);
         obj->pulse = (uint32_t)((float)obj->period * 1.0 + 0.5);
-        obj->prescaler = HRTIM_PRESCALERRATIO_DIV4;
 
         // Initialize the HRTIM structure
         HrtimHandle.Instance = HRTIM1;
@@ -487,24 +475,7 @@ void pwmout_period_us(pwmout_t *obj, int us)
     if (obj->pwm == PWM_I) {
         float dc = pwmout_read(obj);
 
-        uint32_t frequency;
-        uint32_t clocksource = __HAL_RCC_GET_HRTIM1_SOURCE();
-        switch (clocksource) {
-            case RCC_HRTIM1CLK_TIMCLK:
-                frequency = HAL_RCC_GetHCLKFreq();
-                break;
-            case RCC_HRTIM1CLK_CPUCLK:
-                frequency = HAL_RCC_GetSysClockFreq();
-                break;
-        }
-
-        /* conversion from us to clock tick */
-        obj->period = us * (frequency / 1000000) / 4;
-        obj->prescaler = HRTIM_PRESCALERRATIO_DIV4;
-
-        if (obj->period > 0xFFDFU) {
-            obj->period = 0xFFDFU;
-        }
+        _pwmout_obj_period_us(obj, us);
 
         sConfig_time_base.Mode = HRTIM_MODE_CONTINUOUS;
         sConfig_time_base.Period = obj->period;
@@ -624,5 +595,28 @@ const PinMap *pwmout_pinmap()
 {
     return PinMap_PWM;
 }
+
+#if defined(HRTIM1)
+void _pwmout_obj_period_us(pwmout_t *obj, int us) {
+    uint32_t frequency;
+    uint32_t clocksource = __HAL_RCC_GET_HRTIM1_SOURCE();
+    switch (clocksource) {
+        case RCC_HRTIM1CLK_TIMCLK:
+            frequency = HAL_RCC_GetHCLKFreq();
+            break;
+        case RCC_HRTIM1CLK_CPUCLK:
+            frequency = HAL_RCC_GetSysClockFreq();
+            break;
+    }
+
+    /* conversion from us to clock tick */
+    obj->period = us * (frequency / 1000000) / 4;
+    obj->prescaler = HRTIM_PRESCALERRATIO_DIV4;
+
+    if (obj->period > 0xFFDFU) {
+        obj->period = 0xFFDFU;
+    }
+}
+#endif
 
 #endif
