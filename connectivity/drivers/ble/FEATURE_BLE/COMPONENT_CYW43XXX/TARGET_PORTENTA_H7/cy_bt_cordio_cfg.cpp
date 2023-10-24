@@ -38,7 +38,7 @@
 #define CYCFG_BT_HOST_WAKE_IRQ_EVENT  WAKE_EVENT_ACTIVE_LOW
 #define CYCFG_BT_DEV_WAKE_POLARITY    WAKE_EVENT_ACTIVE_LOW
 
-bool cycfg_bt_lp_enabled = true;
+static bool cycfg_bt_lp_enabled = true;
 
 /*******************************************************************************
 * Function Name: ble_cordio_get_h4_transport_driver
