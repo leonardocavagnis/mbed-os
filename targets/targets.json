@@ -3711,23 +3711,49 @@
         ],
         "device_name": "STM32H747XIHx"
     },
-    "PORTENTA_H7_M4": {
-        "inherits": ["PORTENTA_H7"],
-        "core": "Cortex-M4F",
-        "mbed_rom_start": "0x08100000",
-        "mbed_rom_size" : "0x100000",
-        "mbed_ram_start": "0x10000000",
-        "mbed_ram_size" : "0x48000",
-        "extra_labels_add": [
-            "STM32H747xI_CM4"
-        ],
+    "GENERIC_STM32H747_M4": {
+        "inherits": ["MCU_STM32H747xI_CM4"],
+        "config": {
+            "usb_speed": {
+                "help": "USE_USB_OTG_FS or USE_USB_OTG_HS or USE_USB_HS_IN_FS",
+                "value": "USE_USB_OTG_HS"
+            }
+        },
         "macros_add": [
+            "MBEDTLS_FS_IO",
+            "MBEDTLS_SHA1_C",
+            "CM4_BOOT_BY_APPLICATION",
             "CORE_CM4",
-            "MBED_MPU_CUSTOM"
+            "MBED_MPU_CUSTOM",
+            "CYW43XXX_UNBUFFERED_UART"
         ],
         "device_has_remove": [
             "MPU"
-        ]
+        ],
+        "components_add": [
+            "QSPIF",
+            "WHD",
+            "4343W_FS",
+            "CYW43XXX"
+        ],
+        "device_has_add": [
+            "USBDEVICE",
+            "QSPI"
+        ],
+        "extra_labels_add": [
+            "CORDIO",
+            "GENERIC_STM32H747_M4"
+        ],
+        "features": [
+            "BLE"
+        ],
+        "overrides": {
+            "system_power_supply": "PWR_LDO_SUPPLY",
+            "clock_source": "USE_PLL_HSI",
+            "lse_available": 0,
+            "lpticker_delay_ticks": 0,
+            "i2c_timing_value_algo": true
+        }
     },
     "PORTENTA_X8": {
         "inherits": ["MCU_STM32H747xI_CM4"],
