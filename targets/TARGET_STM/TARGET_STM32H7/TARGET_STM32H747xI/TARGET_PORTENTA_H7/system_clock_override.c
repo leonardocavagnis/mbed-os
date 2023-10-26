@@ -129,6 +129,7 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass, bool lowspeed)
         }
     }
 
+#ifndef CORE_CM4
     /* Enable oscillator pin */
     __HAL_RCC_GPIOH_CLK_ENABLE();
     GPIO_InitTypeDef  gpio_osc_init_structure;
@@ -139,6 +140,7 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass, bool lowspeed)
     HAL_GPIO_Init(GPIOH, &gpio_osc_init_structure);
     HAL_Delay(10);
     HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, 1);
+#endif
 
     /* Supply configuration update enable */
 #if HSE_VALUE == 27000000

@@ -26,6 +26,7 @@
  ******************************************************************************/
 void enableEthPowerSupply(void)
 {
+#ifndef CORE_CM4
     /* Ensure ETH power supply */
     mbed::I2C i2c(PB_7, PB_6);
 
@@ -48,5 +49,5 @@ void enableEthPowerSupply(void)
     data[0] = 0x35;
     data[1] = 0xF;
     i2c.write(8 << 1, data, sizeof(data));
-
+#endif
 }
