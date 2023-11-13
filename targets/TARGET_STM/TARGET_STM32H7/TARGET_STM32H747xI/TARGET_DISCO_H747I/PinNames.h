@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-#define DUAL_PAD 0xF00
+#define DUAL_PAD 0x800
 
 typedef enum {
     ALT0  = 0x100,
