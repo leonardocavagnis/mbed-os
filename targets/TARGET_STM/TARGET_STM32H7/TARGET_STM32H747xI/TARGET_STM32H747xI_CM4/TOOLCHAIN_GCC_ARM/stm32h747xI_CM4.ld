@@ -38,9 +38,15 @@
 MEMORY
 {
     FLASH (rx)   : ORIGIN = MBED_APP_START, LENGTH = MBED_APP_SIZE
-    RAM (rwx)    : ORIGIN = MBED_RAM_START + VECTORS_SIZE, LENGTH = MBED_RAM_SIZE - VECTORS_SIZE
+    RAM_D2 (rwx)    : ORIGIN = MBED_RAM_START + VECTORS_SIZE, LENGTH = MBED_RAM_SIZE - VECTORS_SIZE
     RAM_D3 (xrw) : ORIGIN = 0x38000000, LENGTH = 64K
 }
+
+#if (CM4_BINARY_START == 0x60000000)
+REGION_ALIAS("RAM", FLASH);
+#else
+REGION_ALIAS("RAM", RAM_D2);
+#endif
 
 /* Linker script to place sections and symbol values. Should be used together
  * with other linker script that defines memory regions FLASH and RAM.
