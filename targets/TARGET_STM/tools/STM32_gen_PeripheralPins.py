@@ -491,7 +491,7 @@ extern "C" {
 
     if DUAL_PAD:
         line_to_write = ("""
-#define DUAL_PAD 0xF00
+#define DUAL_PAD 0x800
 """)
         out_h_file.write(line_to_write)
 
