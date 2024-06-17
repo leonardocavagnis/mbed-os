@@ -36,6 +36,7 @@ target_include_directories(mbed-rp2040
         pico-sdk/common/pico_base/include
         pico-sdk/common/pico_binary_info/include
         pico-sdk/common/pico_util/include
+        pico-sdk/common/pico_rand/include
         pico-sdk/boards/include
         pico-sdk/generated
         .
@@ -71,6 +72,7 @@ target_sources(mbed-rp2040
         pico-sdk/rp2_common/pico_bootrom/bootrom.c
         pico-sdk/rp2_common/pico_runtime/runtime.c
         pico-sdk/rp2_common/pico_platform/platform.c
+        pico-sdk/rp2_common/pico_rand/rand.c
         pico-sdk/common/pico_sync/mutex.c
         pico-sdk/common/pico_time/time.c
         pico-sdk/common/pico_sync/lock_core.c
