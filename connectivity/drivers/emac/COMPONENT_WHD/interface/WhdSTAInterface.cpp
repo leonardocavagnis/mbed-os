@@ -260,7 +260,7 @@ nsapi_error_t WhdSTAInterface::connect()
 {
     ScopedMutexLock lock(_iface_shared.mutex);
 
-#define MAX_RETRY_COUNT    ( 5 )
+#define MAX_RETRY_COUNT    ( 1 )
     int i;
     whd_result_t res;
 
