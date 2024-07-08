@@ -2341,13 +2341,7 @@ HAL_StatusTypeDef HAL_ETH_SetWakeUpFilter(ETH_HandleTypeDef *heth, uint32_t *pFi
   */
 HAL_ETH_StateTypeDef HAL_ETH_GetState(ETH_HandleTypeDef *heth)
 {
-  HAL_ETH_StateTypeDef ret;
-  HAL_ETH_StateTypeDef gstate = heth->gState;
-  HAL_ETH_StateTypeDef rxstate =heth->RxState;
-
-  ret = gstate;
-  ret |= rxstate;
-  return ret;
+  return heth->gState;
 }
 
 /**
