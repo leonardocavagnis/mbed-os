@@ -72,9 +72,11 @@ bool Watchdog::stop()
 
 void Watchdog::kick()
 {
-    core_util_critical_section_enter();
-    hal_watchdog_kick();
-    core_util_critical_section_exit();
+    if (_running) {
+        core_util_critical_section_enter();
+        hal_watchdog_kick();
+        core_util_critical_section_exit();
+    }
 }
 
 bool Watchdog::is_running() const
