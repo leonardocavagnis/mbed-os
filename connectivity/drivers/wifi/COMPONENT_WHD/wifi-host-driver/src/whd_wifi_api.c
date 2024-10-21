@@ -294,6 +294,8 @@ static const uint16_t mcs_data_rate_lookup_table[32][2][2] =
     },
 };
 
+static whd_wifi_join_timeout = DEFAULT_JOIN_ATTEMPT_TIMEOUT;
+
 
 /******************************************************
 *             Static Function prototypes
@@ -1334,7 +1336,7 @@ static uint32_t whd_wifi_join_wait_for_complete(whd_interface_t ifp, cy_semaphor
 
     while (!done)
     {
-        result = cy_rtos_get_semaphore(semaphore, DEFAULT_JOIN_ATTEMPT_TIMEOUT / 10, WHD_FALSE);
+        result = cy_rtos_get_semaphore(semaphore, whd_wifi_join_timeout / 10, WHD_FALSE);
         whd_assert("Get semaphore failed", (result == CY_RSLT_SUCCESS) || (result == CY_RTOS_TIMEOUT) );
         REFERENCE_DEBUG_ONLY_VARIABLE(result);
 
@@ -1345,7 +1347,7 @@ static uint32_t whd_wifi_join_wait_for_complete(whd_interface_t ifp, cy_semaphor
         }
 
         cy_rtos_get_time(&current_time);
-        done = (whd_bool_t)( (current_time - start_time) >= DEFAULT_JOIN_ATTEMPT_TIMEOUT );
+        done = (whd_bool_t)( (current_time - start_time) >= whd_wifi_join_timeout );
     }
 
     if (result != WHD_SUCCESS)
@@ -1574,7 +1576,7 @@ uint32_t whd_wifi_join_specific(whd_interface_t ifp, const whd_scan_result_t *ap
 }
 
 uint32_t whd_wifi_join(whd_interface_t ifp, const whd_ssid_t *ssid, whd_security_t auth_type,
-                       const uint8_t *security_key, uint8_t key_length)
+                       const uint8_t *security_key, uint8_t key_length, uint32_t timeout)
 {
     cy_semaphore_t join_sema;
     whd_result_t result;
@@ -1616,6 +1618,7 @@ uint32_t whd_wifi_join(whd_interface_t ifp, const whd_ssid_t *ssid, whd_security
         ssid_params->SSID_len = htod32(ssid->length);
         memcpy(ssid_params->SSID, ssid->value, ssid_params->SSID_len);
         result = whd_cdc_send_ioctl(ifp, CDC_SET, WLC_SET_SSID, buffer, 0);
+        whd_wifi_join_timeout = timeout;
 
         if (result == WHD_SUCCESS)
         {

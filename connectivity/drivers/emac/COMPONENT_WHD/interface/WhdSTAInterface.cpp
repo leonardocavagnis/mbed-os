@@ -211,7 +211,8 @@ WhdSTAInterface::WhdSTAInterface(WHD_EMAC &emac, OnboardNetworkStack &stack, Olm
       _security(NSAPI_SECURITY_NONE),
       _whd_emac(emac),
       _olm(&olm),
-      _iface_shared(shared)
+      _iface_shared(shared),
+      _timeout(7000)
 {
 }
 
@@ -334,7 +335,7 @@ nsapi_error_t WhdSTAInterface::connect()
             res = (whd_result_t)whd_wifi_join(_whd_emac.ifp,
                                               &ssid,
                                               security,
-                                              (const uint8_t *)_pass, strlen(_pass));
+                                              (const uint8_t *)_pass, strlen(_pass), _timeout);
     	}
     	else
     	{
@@ -345,7 +346,7 @@ nsapi_error_t WhdSTAInterface::connect()
     		res = (whd_result_t)whd_wifi_join(_whd_emac.ifp,
     		                                   &ssid,
     		                                   security,
-    		                                   (const uint8_t *)_pass, key_length);
+    		                                   (const uint8_t *)_pass, key_length, _timeout);
     	}
     	if (res == WHD_SUCCESS) {
                 break;
